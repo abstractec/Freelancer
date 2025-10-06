@@ -12,10 +12,16 @@ import SwiftData
 struct FreelancerApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Client.self,
+            Project.self,
+            Task.self,
+            Billable.self,
+            Rate.self,
+            Tax.self,
+            UserSettings.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+        
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {

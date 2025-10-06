@@ -10,50 +10,68 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @Query private var tasks: [Task]
+    
+    @Query private var clients: [Client]
+    @State private var showingEditClient = false
+    @State private var showingRateList = false
+    @State private var showingEditTask = false
+    @State private var showingSettings = false
 
     var body: some View {
         NavigationSplitView {
             List {
-                ForEach(items) { item in
+                ForEach(clients) { client in
                     NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
+                        ClientDetail(client: client)
                     } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+                        Text(client.name)
                     }
                 }
                 .onDelete(perform: deleteItems)
             }
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
+            .navigationSplitViewColumnWidth(min: 240, ideal: 240)
             .toolbar {
                 ToolbarItem {
-                    Button(action: addItem) {
+                    Button {
+                        showingEditClient.toggle()
+                    } label: {
                         Label("Add Item", systemImage: "plus")
-                    }
+                    }.sheet(isPresented: $showingEditClient, content: {
+                        EditClient(isPresented: $showingEditClient, client: Client.emptyClient)
+                    })
+                }
+                ToolbarItem {
+                    Button {
+                        showingSettings.toggle()
+                    } label: {
+                        Label("Rate", systemImage: "gear")
+                    }.sheet(isPresented: $showingSettings, content: {
+                        Settings(isPresented: $showingSettings)
+                    })
                 }
             }
+            AllTasks(isPresented: $showingEditTask, tasks: tasks)
+                .frame(height: 200)
         } detail: {
             Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
         }
     }
 
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                modelContext.delete(items[index])
+                modelContext.delete(clients[index])
             }
         }
     }
 }
 
 #Preview {
+    ContentView().modelContainer(ModelData.shared.modelContainer)
+}
+
+#Preview("Empty List") {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: Client.self, inMemory: true)
 }
