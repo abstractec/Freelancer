@@ -110,6 +110,8 @@
 		7BA536F02C5C866C003D42F0 /* AllTasks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllTasks.swift; sourceTree = "<group>"; };
 		7BA536F22C5C8B21003D42F0 /* TaskTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskTests.swift; sourceTree = "<group>"; };
 		7BA536F92C5C9205003D42F0 /* Date+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extension.swift"; sourceTree = "<group>"; };
+		7BBDA8B22E93791F001E1CCF /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		7BBDA8B32E937928001E1CCF /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		7BC083402C31804600D165CD /* Freelancer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Freelancer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BC083432C31804600D165CD /* FreelancerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreelancerApp.swift; sourceTree = "<group>"; };
 		7BC083452C31804600D165CD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -238,6 +240,8 @@
 				7BC083562C31804800D165CD /* FreelancerTests */,
 				7BC083602C31804800D165CD /* FreelancerUITests */,
 				7BC083412C31804600D165CD /* Products */,
+				7BBDA8B22E93791F001E1CCF /* LICENSE */,
+				7BBDA8B32E937928001E1CCF /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
