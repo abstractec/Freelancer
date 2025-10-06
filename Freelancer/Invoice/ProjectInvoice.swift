@@ -23,6 +23,8 @@ struct ProjectInvoice: View {
     
     @State private var total: String = ""
     
+    @State private var billables: [Billable] = []
+    
     init(isPresented: Binding<Bool>, project: Project, invoice: Invoice? = nil) {
         self.project = project
         self.invoice = invoice
@@ -36,11 +38,19 @@ struct ProjectInvoice: View {
             
             Text("Billables").font(.headline).padding(.top)
             Text("Multiple Select").font(.subheadline)
-            List(project.billables, selection: $multiSelection) { billable in
+            List(billables, selection: $multiSelection) { billable in
                 Text(billable.details)
             }
             .frame(minHeight: (minRowHeight * 1.3)+(minRowHeight * CGFloat(15)))
             .onAppear() {
+                if (invoice == nil) {
+                    billables = project.billables.filter { billable in
+                        billable.status == .new
+                    }
+                } else {
+                    billables = project.billables
+                }
+                
                 invoice?.billables.forEach { billable in
                     self.multiSelection.insert(billable.id)
                 }
@@ -118,6 +128,7 @@ struct ProjectInvoice: View {
                                        
                     billables.forEach { billable in
                         billable.invoice = invoice
+                        billable.status = .invoiced
                     }
                     
                     if let taxId = selectedTax, let tax = taxes.first(where: { $0.id == taxId}) {

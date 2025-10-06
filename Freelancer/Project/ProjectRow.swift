@@ -24,6 +24,11 @@ struct ProjectRow: View {
     
     private var currentBillable: Billable?
     @State private var selectedBillable: Billable?
+    
+//    @Query(filter: #Predicate<Billable> { billable in
+//        billable.status == BillableStatus.new
+//    }) var billables: [Billable]
+
 
     init (project: Project) {
         self.project = project
@@ -132,12 +137,21 @@ struct ProjectRow: View {
                 
                 
             }
-            .frame(minHeight: (minRowHeight * 1.3)+(minRowHeight * CGFloat(max(project.billables.count, 5))))
+            .frame(minHeight: (minRowHeight * 1.3)+(minRowHeight * CGFloat(max(project.billables.filter { billable in
+                billable.status == .new
+
+            }.count, 5))))
             .onAppear() {
-                self.billables = project.billables.sorted { $0.start < $1.start }
+                self.billables = project.billables.filter { billable in
+                    billable.status == .new
+                    
+                }.sorted { $0.start < $1.start }
             }
             .onChange(of: project.billables) { oldValue, newValue in
-                self.billables = project.billables.sorted { $0.start < $1.start }
+                self.billables = project.billables.filter { billable in
+                    billable.status == .new
+                    
+                }.sorted { $0.start < $1.start }
             }
             .sheet(item: $selectedBillable) { item in
                 ProjectBillables(isPresented: $showingEditProjectBillable, project: self.project, billable: item)
