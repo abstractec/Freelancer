@@ -205,8 +205,14 @@ struct InvoicePDF: View {
     private func calculateBillable(billable : Billable) -> Double {
         let billableHelper = BillableHelper()
         var amount = 0.0
-        let interval = billableHelper.numberOfSegments(for: billable.rate.timeInterval, between: billable.start, and: billable.end)
-        amount = Double((interval * billable.rate.amount) / billable.rate.timeUnit)
+        
+        if (billable.rate.timeUnit == 0) {
+            amount = Double(billable.rate.amount)
+
+        } else {
+            let interval = billableHelper.numberOfSegments(for: billable.rate.timeInterval, between: billable.start, and: billable.end)
+            amount = Double((interval * billable.rate.amount) / billable.rate.timeUnit)
+        }
         
         return amount
     }
@@ -216,8 +222,13 @@ struct InvoicePDF: View {
         var amount = 0.0
         
         invoice.billables.forEach { billable in
-            let interval = billableHelper.numberOfSegments(for: billable.rate.timeInterval, between: billable.start, and: billable.end)
-            amount += Double((interval * billable.rate.amount) / billable.rate.timeUnit)
+            
+            if (billable.rate.timeUnit == 0) {
+                amount += Double(billable.rate.amount)
+            } else {
+                let interval = billableHelper.numberOfSegments(for: billable.rate.timeInterval, between: billable.start, and: billable.end)
+                amount += Double((interval * billable.rate.amount) / billable.rate.timeUnit)
+            }
         }
         
         return amount

@@ -198,9 +198,12 @@ struct ProjectRow: View {
     func formatTotal(_ billable: Billable) -> String {
         let billableHelper = BillableHelper()
         
-        let interval = billableHelper.numberOfSegments(for: billable.rate.timeInterval, between: billable.start, and: billable.end)
-
-        return "\(billable.rate.currency) \((interval * billable.rate.amount) / billable.rate.timeUnit)"
+        if (billable.rate.timeUnit == 0) {
+            return "\(billable.rate.currency) \(billable.rate.amount)"
+        } else {
+            let interval = billableHelper.numberOfSegments(for: billable.rate.timeInterval, between: billable.start, and: billable.end)
+            return "\(billable.rate.currency) \((interval * billable.rate.amount) / billable.rate.timeUnit)"
+        }
     }
 }
 

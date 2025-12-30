@@ -158,8 +158,13 @@ struct ProjectInvoice: View {
         
         multiSelection.forEach { uuid in
             if let billable = project.billables.first(where: { $0.id == uuid }) {
-                let interval = billableHelper.numberOfSegments(for: billable.rate.timeInterval, between: billable.start, and: billable.end)
-                amount += Double((interval * billable.rate.amount) / billable.rate.timeUnit)
+                if (billable.rate.timeUnit == 0) {
+                    amount += Double(billable.rate.amount)
+                } else {
+                    let interval = billableHelper.numberOfSegments(for: billable.rate.timeInterval, between: billable.start, and: billable.end)
+                    
+                    amount += Double((interval * billable.rate.amount) / billable.rate.timeUnit)
+                }
             }
         }
 

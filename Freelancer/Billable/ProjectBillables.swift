@@ -127,10 +127,16 @@ struct ProjectBillables: View {
             let billableHelper = BillableHelper()
             
             let interval = billableHelper.numberOfSegments(for: rate.timeInterval, between: self.startDate, and: self.endDate)
-            
-            let units = ((interval * rate.amount) / rate.timeUnit)
 
-            lineItem = "\(interval) \(rate.timeInterval.rawValue)s at \(rate.amount) \(rate.currency) = \(units)"
+            var units = 0;
+
+            if (rate.timeUnit == 0) {
+                units = (interval * rate.amount)
+            } else {
+                units = ((interval * rate.amount) / rate.timeUnit)
+            }
+            
+            lineItem = "--- \(interval) \(rate.timeInterval.rawValue)s at \(rate.amount) \(rate.currency) = \(units)"
         }
     }
 }
