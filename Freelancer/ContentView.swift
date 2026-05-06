@@ -14,32 +14,57 @@ struct ContentView: View {
     
     @Query private var clients: [Client]
     @State private var showingEditClient = false
+    @State private var isCreatingClient = false
     @State private var showingRateList = false
     @State private var showingEditTask = false
     @State private var showingSettings = false
+    
+    @State private var selectedClient: Client?
 
     var body: some View {
         NavigationSplitView {
             List {
                 ForEach(clients) { client in
-                    NavigationLink {
-                        ClientDetail(client: client)
-                    } label: {
-                        Text(client.name)
+                    HStack {
+                        NavigationLink {
+                            ClientDetail(client: client)
+                        } label: {
+                            Text(client.name)
+                        }
+                        Spacer()
+                        
+                        Button {
+                            editClient(client: client)
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        .buttonStyle(.borderless)
+                        .help("Edit client")
                     }
                 }
                 .onDelete(perform: deleteItems)
             }
             .navigationSplitViewColumnWidth(min: 240, ideal: 240)
+            .sheet(isPresented: $showingEditClient, onDismiss: {
+                selectedClient = nil
+            }) {
+                if let selectedClient {
+                    EditClient(
+                        isPresented: $showingEditClient,
+                        client: selectedClient,
+                        isNew: isCreatingClient
+                    )
+                }
+            }
             .toolbar {
                 ToolbarItem {
                     Button {
-                        showingEditClient.toggle()
+                        isCreatingClient = true
+                        selectedClient = Client.emptyClient
+                        showingEditClient = true
                     } label: {
                         Label("Add Item", systemImage: "plus")
-                    }.sheet(isPresented: $showingEditClient, content: {
-                        EditClient(isPresented: $showingEditClient, client: Client.emptyClient)
-                    })
+                    }
                 }
                 ToolbarItem {
                     Button {
@@ -64,6 +89,12 @@ struct ContentView: View {
                 modelContext.delete(clients[index])
             }
         }
+    }
+    
+    private func editClient(client: Client) {
+        isCreatingClient = false
+        selectedClient = client
+        showingEditClient = true
     }
 }
 

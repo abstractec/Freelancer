@@ -58,7 +58,7 @@ struct ClientDetail: View {
                         .buttonStyle(.plain)
                         .padding(.trailing, 8)
                         .sheet(isPresented: $showingEditClient, content: {
-                            EditClient(isPresented: $showingEditClient, client: client)
+                            EditClient(isPresented: $showingEditClient, client: client, isNew: false)
                         })
                     }.padding()
                         .background(.green.opacity(0.1))

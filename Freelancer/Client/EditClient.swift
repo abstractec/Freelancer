@@ -11,7 +11,7 @@ struct EditClient: View {
     @Environment(\.modelContext) private var modelData
     @Environment(\.dismiss) var dismiss
     
-    @Binding var isPresented: Bool?
+    @Binding var isPresented: Bool
 
     @State var refresh: Bool = false
     @State var textEditorHeight : CGFloat = 40
@@ -20,22 +20,24 @@ struct EditClient: View {
        refresh.toggle()
     }
     
-    @State private var client: Client = Client.emptyClient
+    /// When true, `client` is a new model and must be inserted on save.
+    private let isNew: Bool
+    
+    @State private var client: Client
     
     @State private var name: String
     @State private var address: String
     @State private var details: String
     @State private var status: Client.ClientStatus
     
-    init (isPresented: Binding<Bool>, client: Client) {
-        self.client = client
-        self.name = client.name
-        self.address = client.address
-        self.details = client.details
-        self.status = client.status
-        
-        _isPresented = Binding.constant(false)
-        self.isPresented = isPresented.wrappedValue
+    init(isPresented: Binding<Bool>, client: Client, isNew: Bool) {
+        _isPresented = isPresented
+        self.isNew = isNew
+        _client = State(initialValue: client)
+        _name = State(initialValue: client.name)
+        _address = State(initialValue: client.address)
+        _details = State(initialValue: client.details)
+        _status = State(initialValue: client.status)
     }
 
     var body: some View {
@@ -79,13 +81,14 @@ struct EditClient: View {
                     })
                     
                     Button(action: {
-                        // TODO: save this - check if we're editing!
                         client.name = name
                         client.address = address
                         client.details = details
                         client.status = status
                         
-                        modelData.insert(client)
+                        if isNew {
+                            modelData.insert(client)
+                        }
                         isPresented = false
                         
                         dismiss()
@@ -103,14 +106,14 @@ struct EditClient: View {
 
 #Preview {
     Group {
-        EditClient(isPresented: .constant(false), client: ModelData.shared.client)
+        EditClient(isPresented: .constant(false), client: ModelData.shared.client, isNew: false)
     }
     .modelContainer(ModelData.shared.modelContainer)
 }
 
 #Preview("Create") {
     Group {
-        EditClient(isPresented: .constant(false), client: ModelData.shared.client)
+        EditClient(isPresented: .constant(false), client: Client.emptyClient, isNew: true)
     }
     .modelContainer(ModelData.shared.modelContainer)
 

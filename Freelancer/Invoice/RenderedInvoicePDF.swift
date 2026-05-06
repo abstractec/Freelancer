@@ -17,6 +17,7 @@ struct RenderedInvoicePDF: View {
     @State private var companyAddress: String
     @State private var bankDetails: String
     @State private var clientAddress: String
+    @State private var clientName: String
 
     init(invoice: Invoice, project: Project, companyName: String = "", companyAddress: String = "", bankDetails: String = "") {
         self.invoice = invoice
@@ -24,6 +25,7 @@ struct RenderedInvoicePDF: View {
         self.bankDetails = UserDefaults.standard.string(forKey: "bankDetails") ?? ""
         self.companyName = UserDefaults.standard.string(forKey: "companyName") ?? ""
         self.clientAddress = project.client?.address ?? ""
+        self.clientName = project.client?.name ?? ""
     }
     
     var body: some View {
@@ -45,7 +47,7 @@ struct RenderedInvoicePDF: View {
             HStack {
                 Text("From:\n\(companyAddress)")
                 Spacer()
-                Text("To:\n\(clientAddress)")
+                Text("To:\n\(clientName)\n\(clientAddress)")
             }.padding(.bottom, 16)
 
             
@@ -62,7 +64,7 @@ struct RenderedInvoicePDF: View {
                         Text("Amount").gridCellAnchor(.leading)
                     }
                     Divider()
-                    ForEach(invoice.billables) { billable in
+                    ForEach(invoice.billables.sorted{$0.start < $1.start }) { billable in
                         GridRow {
                             Text(billable.details).gridCellAnchor(.leading)
                             Text(formatDate(billable.start)).gridCellAnchor(.leading)

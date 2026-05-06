@@ -19,11 +19,15 @@ struct InvoicePDF: View {
     @State private var companyName: String
     @State private var companyAddress: String
     @State private var bankDetails: String
+    @State private var clientName: String
     @State private var clientAddress: String
+    @State private var dateRange: String
 
     @State private var showingExporter = false
     @State private var documentToExport: PDFDocument?
     @State private var pdfFileURL: URL?
+    
+    @State private var invoiceBillables: [Billable] = []
     
     init(invoice: Invoice, project: Project, companyName: String = "", companyAddress: String = "", bankDetails: String = "") {
         self.invoice = invoice
@@ -32,6 +36,21 @@ struct InvoicePDF: View {
         self.bankDetails = UserDefaults.standard.string(forKey: "bankDetails") ?? ""
         self.companyName = UserDefaults.standard.string(forKey: "companyName") ?? ""
         self.clientAddress = project.client?.address ?? ""
+        self.clientName = project.client?.name ?? ""
+        
+        let orderedBillables = invoice.billables.sorted { $0.start < $1.start }
+        
+        self.invoiceBillables = invoice.billables.sorted { $0.start < $1.start }
+        
+        if let first = orderedBillables.first, let last = orderedBillables.last {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .medium
+            dateFormatter.timeStyle = .none
+            
+            self.dateRange = "Date Range: \(dateFormatter.string(from: first.start)) to \(dateFormatter.string(from: last.end))"
+        } else {
+            self.dateRange = "wango"
+        }
     }
     
     var body: some View {
@@ -49,12 +68,19 @@ struct InvoicePDF: View {
                 Text("Ref: \(String(format: "%08d", (invoice.sequence ?? 0)))")
                 Spacer()
             }.padding(.bottom, 16)
-            
+
+            HStack {
+                Spacer()
+                Text("\(self.dateRange)")
+                Spacer()
+            }.padding(.bottom, 16)
+
+
             
             HStack {
                 Text("From:\n\(companyAddress)")
                 Spacer()
-                Text("To:\n\(clientAddress)")
+                Text("To:\n\(clientName)\n\(clientAddress)")
             }.padding(.bottom, 16)
             
             
@@ -62,7 +88,7 @@ struct InvoicePDF: View {
                 Text("Items")
                     .font(.headline)
                 
-                Table(invoice.billables) {
+                Table(self.invoiceBillables) {
                     TableColumn("Details", value: \.details)
                     TableColumn("Start") { billable in
                         Text(formatDate(billable.start))
