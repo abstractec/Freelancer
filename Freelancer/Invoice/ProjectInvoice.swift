@@ -154,20 +154,17 @@ struct ProjectInvoice: View {
         var amount = 0.0
         var taxAmount = 0.0
         var totalValue = 0.0
-        let currency = project.billables.first?.rate.currency ?? ""
+        var selectedBillables: [Billable] = []
         
         multiSelection.forEach { uuid in
             if let billable = project.billables.first(where: { $0.id == uuid }) {
-                if (billable.rate.timeUnit == 0) {
-                    amount += Double(billable.rate.amount)
-                } else {
-                    let interval = billableHelper.numberOfSegments(for: billable.rate.timeInterval, between: billable.start, and: billable.end)
-                    
-                    amount += Double((interval * billable.rate.amount) / billable.rate.timeUnit)
-                }
+                selectedBillables.append(billable)
+                amount += billableHelper.amount(for: billable)
             }
         }
 
+        let currency = billableHelper.currency(for: selectedBillables)
+        
         if let tax = taxes.first(where: { $0.id == selectedTax }) {
             let rate = tax.rate
             taxAmount = (amount * rate) / 100

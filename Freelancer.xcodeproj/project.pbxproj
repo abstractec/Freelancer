@@ -25,6 +25,7 @@
 		7B7E4CD62E582C5700090787 /* ProjectBillables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CD52E582C5700090787 /* ProjectBillables.swift */; };
 		7B7E4CD82E58337900090787 /* RateList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CD72E58337900090787 /* RateList.swift */; };
 		7B7E4CDA2E593FFE00090787 /* BillableHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CD92E593FFA00090787 /* BillableHelper.swift */; };
+		7BBDA8C22E9B4A01001E1CCF /* CompanyLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C12E9B4A01001E1CCF /* CompanyLogo.swift */; };
 		7B7E4CDB2E593FFE00090787 /* BillableHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CD92E593FFA00090787 /* BillableHelper.swift */; };
 		7B7E4CDE2E59742A00090787 /* ProjectInvoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CDD2E59742A00090787 /* ProjectInvoice.swift */; };
 		7B7E4CE02E5976CF00090787 /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CDF2E5976CF00090787 /* Invoice.swift */; };
@@ -97,6 +98,7 @@
 		7B7E4CD52E582C5700090787 /* ProjectBillables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectBillables.swift; sourceTree = "<group>"; };
 		7B7E4CD72E58337900090787 /* RateList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateList.swift; sourceTree = "<group>"; };
 		7B7E4CD92E593FFA00090787 /* BillableHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillableHelper.swift; sourceTree = "<group>"; };
+		7BBDA8C12E9B4A01001E1CCF /* CompanyLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyLogo.swift; sourceTree = "<group>"; };
 		7B7E4CDD2E59742A00090787 /* ProjectInvoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectInvoice.swift; sourceTree = "<group>"; };
 		7B7E4CDF2E5976CF00090787 /* Invoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Invoice.swift; sourceTree = "<group>"; };
 		7B7E4CE32E59BBA600090787 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -228,6 +230,7 @@
 			isa = PBXGroup;
 			children = (
 				7B7E4CD92E593FFA00090787 /* BillableHelper.swift */,
+				7BBDA8C12E9B4A01001E1CCF /* CompanyLogo.swift */,
 				7BA536F92C5C9205003D42F0 /* Date+Extension.swift */,
 			);
 			path = Util;
@@ -493,6 +496,7 @@
 				7B7E4CDE2E59742A00090787 /* ProjectInvoice.swift in Sources */,
 				7B7E4CF52E5AEDCF00090787 /* RenderedInvoicePDF.swift in Sources */,
 				7B7E4CDA2E593FFE00090787 /* BillableHelper.swift in Sources */,
+				7BBDA8C22E9B4A01001E1CCF /* CompanyLogo.swift in Sources */,
 				7B7E4CF32E5AB82600090787 /* InvoicePDF.swift in Sources */,
 				7BA536FA2C5C9205003D42F0 /* Date+Extension.swift in Sources */,
 				7BC083442C31804600D165CD /* FreelancerApp.swift in Sources */,
@@ -684,7 +688,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Freelancer/Preview Content\"";
-				DEVELOPMENT_TEAM = B5DA3CU4GN;
+				DEVELOPMENT_TEAM = SM33J5TYWZ;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -716,7 +720,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Freelancer/Preview Content\"";
-				DEVELOPMENT_TEAM = B5DA3CU4GN;
+				DEVELOPMENT_TEAM = SM33J5TYWZ;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

@@ -102,13 +102,17 @@ struct ProjectRow: View {
             Table(billables) {
                 TableColumn("Details", value: \.details)
                 TableColumn("Start") { billable in
-                    Text(formatDate(billable.start))
+                    Text(formatDate(billable.start, includeTime: billable.kind != .fixed))
                 }
                 TableColumn("End") { billable in
-                    Text(formatDate(billable.end))
+                    if billable.kind == .fixed {
+                        Text("—")
+                    } else {
+                        Text(formatDate(billable.end))
+                    }
                 }
                 TableColumn("Rate") { billable in
-                    Text(billable.rate.name)
+                    Text(BillableHelper().rateLabel(for: billable))
                 }
                 TableColumn("Total") { billable in
                     Text(formatTotal(billable))
@@ -183,10 +187,10 @@ struct ProjectRow: View {
 
     }
     
-    func formatDate(_ date: Date) -> String {
+    func formatDate(_ date: Date, includeTime: Bool = true) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .medium
-        dateFormatter.timeStyle = .short
+        dateFormatter.timeStyle = includeTime ? .short : .none
         return dateFormatter.string(from: date)
     }
     
@@ -196,14 +200,7 @@ struct ProjectRow: View {
     }
     
     func formatTotal(_ billable: Billable) -> String {
-        let billableHelper = BillableHelper()
-        
-        if (billable.rate.timeUnit == 0) {
-            return "\(billable.rate.currency) \(billable.rate.amount)"
-        } else {
-            let interval = billableHelper.numberOfSegments(for: billable.rate.timeInterval, between: billable.start, and: billable.end)
-            return "\(billable.rate.currency) \((interval * billable.rate.amount) / billable.rate.timeUnit)"
-        }
+        BillableHelper().formattedAmount(for: billable)
     }
 }
 

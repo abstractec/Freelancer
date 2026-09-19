@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct Settings: View {
     @Environment(\.modelContext) private var modelContext
@@ -17,6 +18,8 @@ struct Settings: View {
 
     @State private var showingRateList = false
     @State private var showingTaxesList = false
+    @State private var showingLogoPicker = false
+    @State private var logoRevision = 0
 
     @State private var companyName: String
     @State private var address: String
@@ -44,6 +47,42 @@ struct Settings: View {
                 .onChange(of: companyName) {
                     saveCompanyName(companyName)
                 }
+
+            Text("Invoice Logo").fontWeight(.bold).padding(.top, 8)
+            Text("Shown in the top-right of invoices and exported PDFs.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            HStack(alignment: .center, spacing: 16) {
+                InvoiceLogoView(size: 72, showsPlaceholder: true)
+                    .id(logoRevision)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Button(CompanyLogoStore.hasLogo ? "Replace Logo…" : "Upload Logo…") {
+                        showingLogoPicker = true
+                    }
+                    if CompanyLogoStore.hasLogo {
+                        Button("Remove Logo") {
+                            CompanyLogoStore.remove()
+                            logoRevision += 1
+                        }
+                    }
+                }
+            }
+            .padding(.bottom, 8)
+            .fileImporter(
+                isPresented: $showingLogoPicker,
+                allowedContentTypes: [.png, .jpeg, .webP],
+                allowsMultipleSelection: false
+            ) { result in
+                if case .success(let urls) = result, let url = urls.first {
+                    do {
+                        try CompanyLogoStore.save(from: url)
+                        logoRevision += 1
+                    } catch {
+                        print("Could not save logo: \(error)")
+                    }
+                }
+            }
 
             Text("Address").fontWeight(.bold)
             TextEditor(

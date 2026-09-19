@@ -15,21 +15,36 @@ final class Billable: Identifiable {
     var end: Date
     var details: String
     var project: Project?
-    var rate: Rate
+    var rate: Rate?
     var status: BillableStatus?
     var invoice: Invoice?
+    var kind: BillableKind = BillableKind.time
+    var fixedAmount: Double = 0
+    var currency: String = ""
     
-    init(start: Date, end: Date, details: String, project: Project, rate: Rate) {
+    init(
+        start: Date,
+        end: Date,
+        details: String,
+        project: Project,
+        rate: Rate? = nil,
+        kind: BillableKind = .time,
+        fixedAmount: Double = 0,
+        currency: String = ""
+    ) {
         self.start = start
         self.end = end
         self.details = details
         self.project = project
         self.rate = rate
         self.status = .new
+        self.kind = kind
+        self.fixedAmount = fixedAmount
+        self.currency = currency
     }
     
     static var emptyBillable: Billable {
-        Billable(start: Date(), end: Date(), details: "", project: .emptyProject, rate: .emptyRate)
+        Billable(start: Date(), end: Date(), details: "", project: .emptyProject)
     }
 }
 
@@ -41,4 +56,20 @@ enum BillableStatus: String, CaseIterable, Codable, Identifiable {
     case cancelled = "cancelled"
     case invoiced = "invoiced"
     case paid = "paid"
+}
+
+enum BillableKind: String, CaseIterable, Codable, Identifiable {
+    var id: Self { self }
+    
+    case time = "time"
+    case fixed = "fixed"
+    
+    var label: String {
+        switch self {
+        case .time:
+            return "Time-based"
+        case .fixed:
+            return "Fixed cost"
+        }
+    }
 }

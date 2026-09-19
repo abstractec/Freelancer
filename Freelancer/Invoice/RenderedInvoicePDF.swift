@@ -30,19 +30,22 @@ struct RenderedInvoicePDF: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            HStack {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(companyName)
+                            .font(.title)
+                        Text("Invoice").font(.title)
+                    }
+                    
+                    Text("Ref: \(String(format: "%08d", (invoice.sequence ?? 0)))")
+                }
+                
                 Spacer()
-                Text(companyName)
-                    .font(.title)
-                Text("Invoice").font(.title)
-                Spacer()
+                
+                InvoiceLogoView(size: 120)
             }
-            
-            HStack {
-                Spacer()
-                Text("Ref: \(String(format: "%08d", (invoice.sequence ?? 0)))")
-                Spacer()
-            }.padding(.bottom, 16)
+            .padding(.bottom, 16)
             
             HStack {
                 Text("From:\n\(companyAddress)")
@@ -67,9 +70,9 @@ struct RenderedInvoicePDF: View {
                     ForEach(invoice.billables.sorted{$0.start < $1.start }) { billable in
                         GridRow {
                             Text(billable.details).gridCellAnchor(.leading)
-                            Text(formatDate(billable.start)).gridCellAnchor(.leading)
-                            Text(formatDate(billable.end)).gridCellAnchor(.leading)
-                            Text("\(billable.rate.currency) \(String(format: "%.2f", calculateBillable(billable: billable)))").gridCellAnchor(.leading)
+                            Text(formatDate(billable.start, includeTime: billable.kind != .fixed)).gridCellAnchor(.leading)
+                            Text(billable.kind == .fixed ? "—" : formatDate(billable.end)).gridCellAnchor(.leading)
+                            Text(BillableHelper().formattedAmount(for: billable)).gridCellAnchor(.leading)
                         }
                     }
                 }
@@ -88,19 +91,19 @@ struct RenderedInvoicePDF: View {
                     VStack {
                         HStack {
                             Text("Total (Excluding Tax)")
-                            Text("\(invoice.billables.first?.rate.currency ?? "") \(String(format: "%.2f", calculateTotalWithoutTax(invoice: invoice)))")
+                            Text("\(invoiceCurrency(invoice)) \(String(format: "%.2f", calculateTotalWithoutTax(invoice: invoice)))")
                         }
                     }
                     VStack {
                         HStack {
                             Text("Tax")
-                            Text("\(invoice.billables.first?.rate.currency ?? "") \(String(format: "%.2f", calculateTax(invoice: invoice)))")
+                            Text("\(invoiceCurrency(invoice)) \(String(format: "%.2f", calculateTax(invoice: invoice)))")
                         }
                     }
                     VStack {
                         HStack {
                             Text("Total (Including Tax)")
-                            Text("\(invoice.billables.first?.rate.currency ?? "") \(String(format: "%.2f", calculateTotal(invoice: invoice)))")
+                            Text("\(invoiceCurrency(invoice)) \(String(format: "%.2f", calculateTotal(invoice: invoice)))")
                         }
                     }
                 }
@@ -116,42 +119,20 @@ struct RenderedInvoicePDF: View {
         }.padding()
         
     }
-    func formatDate(_ date: Date) -> String {
+    func formatDate(_ date: Date, includeTime: Bool = true) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .medium
-        dateFormatter.timeStyle = .short
+        dateFormatter.timeStyle = includeTime ? .short : .none
         return dateFormatter.string(from: date)
     }
     
-    private func calculateBillable(billable : Billable) -> Double {
-        let billableHelper = BillableHelper()
-        var amount = 0.0
-        
-        if (billable.rate.timeUnit == 0) {
-            amount = Double(billable.rate.amount)
-        } else {
-            let interval = billableHelper.numberOfSegments(for: billable.rate.timeInterval, between: billable.start, and: billable.end)
-            amount = Double((interval * billable.rate.amount) / billable.rate.timeUnit)
-        }
-        
-        return amount
+    private func invoiceCurrency(_ invoice: Invoice) -> String {
+        BillableHelper().currency(for: invoice.billables)
     }
     
     private func calculateTotalWithoutTax(invoice: Invoice) -> Double {
         let billableHelper = BillableHelper()
-        var amount = 0.0
-        
-        invoice.billables.forEach { billable in
-            
-            if (billable.rate.timeUnit == 0) {
-                amount += Double(billable.rate.amount)
-            } else {
-                let interval = billableHelper.numberOfSegments(for: billable.rate.timeInterval, between: billable.start, and: billable.end)
-                amount += Double((interval * billable.rate.amount) / billable.rate.timeUnit)
-            }
-        }
-        
-        return amount
+        return invoice.billables.reduce(0) { $0 + billableHelper.amount(for: $1) }
     }
     
     private func calculateTax(invoice: Invoice) -> Double {
