@@ -63,7 +63,7 @@ struct ProjectRow: View {
                     Spacer()
                     
                     if let startDate: Date = project.startDate {
-                        Text("Started: \(startDate)")
+                        Text("Started: \(startDate.formatted(date: .abbreviated, time: .omitted))")
                     }
                     
                     

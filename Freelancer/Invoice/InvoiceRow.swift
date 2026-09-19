@@ -23,7 +23,7 @@ struct InvoiceRow: View {
     
     var body: some View {
         HStack {
-            Text("\(invoice.billables.count) Billable(s) \(invoice.start) to \(invoice.end)")
+            Text("\(invoice.billables.count) Billable(s) \(dateRange)")
             Spacer()
             Button {
                 showingPDF.toggle()
@@ -48,6 +48,17 @@ struct InvoiceRow: View {
             }.padding(.trailing, 8)
 
         }
+    }
+    
+    private var dateRange: String {
+        let start = invoice.start.formatted(date: .abbreviated, time: .omitted)
+        let end = invoice.end.formatted(date: .abbreviated, time: .omitted)
+        
+        if Calendar.current.isDate(invoice.start, inSameDayAs: invoice.end) {
+            return start
+        }
+        
+        return "\(start) – \(end)"
     }
 }
 
