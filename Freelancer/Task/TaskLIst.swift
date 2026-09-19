@@ -8,133 +8,99 @@
 import SwiftUI
 
 struct TaskList: View {
-    @Environment(\.modelContext) private var modelData
-
-    var tasks: [Task] {
-        if let project = project {
+    @Environment(\.dismiss) var dismiss
+    @State private var showingEditTask = false
+    @Binding var isPresented: Bool
+    
+    @State private var project: Project?
+    @State private var client: Client?
+    
+    private var tasks: [Task] {
+        if let project {
             return project.tasks
         }
-        
-        if let client = client {
+        if let client {
             return client.tasks
         }
-        
         return []
     }
     
-    @State var project: Project?
-    @State var client: Client?
+    private var incompleteTasks: [Task] {
+        tasks.filter { $0.status == .pending }
+    }
     
-    @Environment(\.dismiss) var dismiss
-    @State private var showingEditTask = false
-
-    @Binding var isPresented: Bool
-
-    init (isPresented: Binding<Bool>, project: Project, tasks: [Task]) {
-        self.project = project
-        
-        _isPresented = Binding.constant(false)
-        self.isPresented = isPresented.wrappedValue
+    private var completeTasks: [Task] {
+        tasks.filter { $0.status == .done }
     }
-   
-    init (isPresented: Binding<Bool>, client: Client, tasks: [Task]) {
-        self.client = client
-
-        _isPresented = Binding.constant(false)
-        self.isPresented = isPresented.wrappedValue
+    
+    private var cancelledTasks: [Task] {
+        tasks.filter { $0.status == .cancelled }
     }
-   
-    var incompleteTasks: [Task] {
-        tasks.filter{ task in
-            task.status == .pending
-        }
+    
+    init(isPresented: Binding<Bool>, project: Project, tasks: [Task]) {
+        _isPresented = isPresented
+        _project = State(initialValue: project)
     }
-
-    var completeTasks: [Task] {
-        tasks.filter{ task in
-            task.status == .done
-        }
-    }
-
-    var cancelledTasks: [Task] {
-        tasks.filter{ task in
-            task.status == .cancelled
-        }
+    
+    init(isPresented: Binding<Bool>, client: Client, tasks: [Task]) {
+        _isPresented = isPresented
+        _client = State(initialValue: client)
     }
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                HStack(alignment: .center) {
-                    Spacer()
-                    Text("Tasks").font(.title)
-                    Spacer()
+        NavigationStack {
+            List {
+                if tasks.isEmpty {
+                    ContentUnavailableView(
+                        "No Tasks",
+                        systemImage: "checklist",
+                        description: Text("Add a task to track work for this \(project != nil ? "project" : "client").")
+                    )
+                } else {
+                    taskSection("Pending", incompleteTasks)
+                    taskSection("Done", completeTasks)
+                    taskSection("Cancelled", cancelledTasks)
                 }
-                
-                Button {
-                    showingEditTask.toggle()
-                } label: {
-                    Label("Add", systemImage: "plus")
-                }
-                .padding(.trailing, 8)
-                .sheet(isPresented: $showingEditTask, content: {
-                    if let project = self.project {
-                        EditTask(isPresented: $showingEditTask, project: project, task: Task.emptyTask)
-                    }
-                    
-                    if let client = self.client {
-                        EditTask(isPresented: $showingEditTask, client: client, task: Task.emptyTask)
-                    }
-                })
-                
-                if let project = self.project {
-                    TaskSummary(tasks: project.tasks)
-                }
-                
-                if let client = self.client {
-                    TaskSummary(tasks: client.tasks)
-                }
-
-                ScrollView {
-                    VStack(alignment: .leading) {
-                        Text("Incomplete Tasks").bold()
-                        ForEach(incompleteTasks) { task in
-                            TaskRow(task: task)
-                        }
-
-                        Text("Done Tasks").bold().padding(.top, 8)
-                        ForEach(completeTasks) { task in
-                            TaskRow(task: task)
-                        }
-
-                        Text("Cancelled Tasks").bold().padding(.top, 8)
-                        ForEach(cancelledTasks) { task in
-                            TaskRow(task: task)
-                        }
-                    }
-                }
-
-                Spacer()
-                
-                HStack(alignment: .center) {
-                    Spacer()
-                    Button(action: {
+            }
+            .navigationTitle("Tasks")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") {
+                        isPresented = false
                         dismiss()
-                    }, label: {
-                        Text("OK")
-                    })
-                    Spacer()
+                    }
                 }
-            }.padding(.all, 8)
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingEditTask = true
+                    } label: {
+                        Label("Add", systemImage: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingEditTask) {
+                if let project {
+                    EditTask(isPresented: $showingEditTask, project: project, task: Task.emptyTask)
+                } else if let client {
+                    EditTask(isPresented: $showingEditTask, client: client, task: Task.emptyTask)
+                }
+            }
+            .frame(minWidth: 520, minHeight: 480)
         }
-        .padding(.vertical, 4)
-        .frame(width: max(40,640), height: max(40,640))
+    }
+    
+    @ViewBuilder
+    private func taskSection(_ title: String, _ tasks: [Task]) -> some View {
+        if !tasks.isEmpty {
+            Section(title) {
+                ForEach(tasks) { task in
+                    TaskRow(task: task)
+                }
+            }
+        }
     }
 }
 
 #Preview {
-    return Group {
-        TaskList(isPresented: .constant(false), client: ModelData.shared.client, tasks: ModelData.shared.client.tasks)
-    }
+    TaskList(isPresented: .constant(true), client: ModelData.shared.client, tasks: ModelData.shared.client.tasks)
 }
-

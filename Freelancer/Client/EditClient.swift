@@ -12,19 +12,10 @@ struct EditClient: View {
     @Environment(\.dismiss) var dismiss
     
     @Binding var isPresented: Bool
-
-    @State var refresh: Bool = false
-    @State var textEditorHeight : CGFloat = 40
     
-    func update() {
-       refresh.toggle()
-    }
-    
-    /// When true, `client` is a new model and must be inserted on save.
     private let isNew: Bool
     
     @State private var client: Client
-    
     @State private var name: String
     @State private var address: String
     @State private var details: String
@@ -39,48 +30,33 @@ struct EditClient: View {
         _details = State(initialValue: client.details)
         _status = State(initialValue: client.status)
     }
-
+    
     var body: some View {
-        VStack {
-            VStack(alignment: .leading) {
-                Text("Client Name").bold()
-                TextField(
-                    "Name",
-                    text: $name).textFieldStyle(.roundedBorder)
-
-                Text("Client Address").bold()
-                TextEditor(
-                    text: $address).textFieldStyle(.roundedBorder).frame(height: max(40,textEditorHeight))
-
-                Text("Client Description").bold()
-                TextEditor(
-                    text: $details).textFieldStyle(.roundedBorder).frame(height: max(40,textEditorHeight))
-                    
-                
-
+        NavigationStack {
+            Form {
+                TextField("Name", text: $name)
+                TextField("Address", text: $address, axis: .vertical)
+                    .lineLimit(3...6)
+                TextField("Description", text: $details, axis: .vertical)
+                    .lineLimit(3...8)
                 Picker("Status", selection: $status) {
                     ForEach(Client.ClientStatus.allCases) { option in
-                        Text(String(describing: option).capitalized)
+                        Text(String(describing: option).capitalized).tag(option)
                     }
                 }
-                .pickerStyle(.segmented)
-               
-                
             }
-            .padding()
-        }
-        .safeAreaInset(edge: .bottom) {
-            VStack(alignment: .trailing, content: {
-                HStack {
-                    Button(action: {
+            .formStyle(.grouped)
+            .navigationTitle(isNew ? "New Client" : "Edit Client")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
                         modelData.rollback()
                         isPresented = false
                         dismiss()
-                    }, label: {
-                        Text("Cancel")
-                    })
-                    
-                    Button(action: {
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
                         client.name = name
                         client.address = address
                         client.details = details
@@ -90,31 +66,17 @@ struct EditClient: View {
                             modelData.insert(client)
                         }
                         isPresented = false
-                        
                         dismiss()
-                    }, label: {
-                        Text("Save")
-                    })
-
+                    }
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
-            }).padding(.bottom, 16)
-
+            }
+            .frame(minWidth: 420, minHeight: 360)
         }
     }
 }
 
-
 #Preview {
-    Group {
-        EditClient(isPresented: .constant(false), client: ModelData.shared.client, isNew: false)
-    }
-    .modelContainer(ModelData.shared.modelContainer)
-}
-
-#Preview("Create") {
-    Group {
-        EditClient(isPresented: .constant(false), client: Client.emptyClient, isNew: true)
-    }
-    .modelContainer(ModelData.shared.modelContainer)
-
+    EditClient(isPresented: .constant(true), client: ModelData.shared.client, isNew: false)
+        .modelContainer(ModelData.shared.modelContainer)
 }

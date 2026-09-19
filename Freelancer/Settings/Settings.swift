@@ -8,163 +8,108 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-struct Settings: View {
-    @Environment(\.modelContext) private var modelContext
-    @Environment(\.dismiss) var dismiss
-    
-    @State var textEditorHeight : CGFloat = 60
-
-    @Binding var isPresented: Bool?
-
+struct AppSettingsView: View {
     @State private var showingRateList = false
     @State private var showingTaxesList = false
     @State private var showingLogoPicker = false
     @State private var logoRevision = 0
-
-    @State private var companyName: String
-    @State private var address: String
-    @State private var bankDetails: String
-    @State private var sequence: String
-
-    init (isPresented: Binding<Bool>) {
-        companyName = UserDefaults.standard.string(forKey: "companyName") ?? ""
-        address = UserDefaults.standard.string(forKey: "address") ?? ""
-        bankDetails = UserDefaults.standard.string(forKey: "bankDetails") ?? ""
-        sequence = UserDefaults.standard.string(forKey: "sequence") ?? "0"
-        
-        _isPresented = Binding.constant(false)
-        self.isPresented = isPresented.wrappedValue
-    }
-
+    
+    @State private var companyName: String = UserDefaults.standard.string(forKey: "companyName") ?? ""
+    @State private var address: String = UserDefaults.standard.string(forKey: "address") ?? ""
+    @State private var bankDetails: String = UserDefaults.standard.string(forKey: "bankDetails") ?? ""
+    @State private var sequence: String = UserDefaults.standard.string(forKey: "sequence") ?? "0"
+    
     var body: some View {
-        VStack(alignment: .leading) {
-            
-            Text("Settings").font(.headline).padding(.bottom, 8)
-            Text("Company Name").fontWeight(.bold)
-            TextField(
-                "Company Name",
-                text: $companyName).textFieldStyle(.roundedBorder)
-                .onChange(of: companyName) {
-                    saveCompanyName(companyName)
-                }
-
-            Text("Invoice Logo").fontWeight(.bold).padding(.top, 8)
-            Text("Shown in the top-right of invoices and exported PDFs.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            HStack(alignment: .center, spacing: 16) {
-                InvoiceLogoView(size: 72, showsPlaceholder: true)
-                    .id(logoRevision)
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Button(CompanyLogoStore.hasLogo ? "Replace Logo…" : "Upload Logo…") {
-                        showingLogoPicker = true
+        Form {
+            Section("Company") {
+                TextField("Company Name", text: $companyName)
+                    .onChange(of: companyName) { _, newValue in
+                        UserDefaults.standard.set(newValue, forKey: "companyName")
                     }
-                    if CompanyLogoStore.hasLogo {
-                        Button("Remove Logo") {
-                            CompanyLogoStore.remove()
-                            logoRevision += 1
+                
+                TextField("Address", text: $address, axis: .vertical)
+                    .lineLimit(3...6)
+                    .onChange(of: address) { _, newValue in
+                        UserDefaults.standard.set(newValue, forKey: "address")
+                    }
+                
+                TextField("Bank Details", text: $bankDetails, axis: .vertical)
+                    .lineLimit(3...6)
+                    .onChange(of: bankDetails) { _, newValue in
+                        UserDefaults.standard.set(newValue, forKey: "bankDetails")
+                    }
+                
+                TextField("Invoice Sequence", text: $sequence)
+                    .onChange(of: sequence) { _, newValue in
+                        let filtered = newValue.filter(\.isNumber)
+                        sequence = filtered
+                        UserDefaults.standard.set(filtered, forKey: "sequence")
+                    }
+            }
+            
+            Section {
+                HStack(alignment: .center, spacing: 16) {
+                    InvoiceLogoView(size: 72, showsPlaceholder: true)
+                        .id(logoRevision)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Button(CompanyLogoStore.hasLogo ? "Replace Logo…" : "Upload Logo…") {
+                            showingLogoPicker = true
+                        }
+                        if CompanyLogoStore.hasLogo {
+                            Button("Remove Logo", role: .destructive) {
+                                CompanyLogoStore.remove()
+                                logoRevision += 1
+                            }
                         }
                     }
                 }
+            } header: {
+                Text("Invoice Logo")
+            } footer: {
+                Text("Shown in the top-right of invoices and exported PDFs.")
             }
-            .padding(.bottom, 8)
-            .fileImporter(
-                isPresented: $showingLogoPicker,
-                allowedContentTypes: [.png, .jpeg, .webP],
-                allowsMultipleSelection: false
-            ) { result in
-                if case .success(let urls) = result, let url = urls.first {
-                    do {
-                        try CompanyLogoStore.save(from: url)
-                        logoRevision += 1
-                    } catch {
-                        print("Could not save logo: \(error)")
-                    }
-                }
-            }
-
-            Text("Address").fontWeight(.bold)
-            TextEditor(
-                text: $address).textFieldStyle(.roundedBorder).frame(height: max(40,textEditorHeight))
-                .onChange(of: address) {
-                    saveAddress(address)
-                }
             
-            Text("Bank Details").fontWeight(.bold)
-            TextEditor(
-                text: $bankDetails).textFieldStyle(.roundedBorder).frame(height: max(40,textEditorHeight))
-                .onChange(of: bankDetails) {
-                    saveBankDetails(bankDetails)
-                }
-            
-            Text("Current Invoice Sequence").fontWeight(.bold)
-            TextField(
-                "Sequence",
-                text: $sequence).textFieldStyle(.roundedBorder)
-                .onChange(of: sequence) { oldValue, newValue in
-                    let filtered = newValue.filter { $0.isNumber }
-                    saveSequence(filtered)
-                    sequence = filtered
-                }
-
-            HStack {
-                Text("Rates").fontWeight(.bold)
-                Spacer()
+            Section("Catalog") {
                 Button {
-                    showingRateList.toggle()
+                    showingRateList = true
                 } label: {
-                    Label("Show", systemImage: "bahtsign.bank.building")
-                }.sheet(isPresented: $showingRateList, content: {
-                    RateList(isPresented: $showingRateList)
-                })
-
-            }.padding(.vertical)
-
-            HStack {
-                Text("Taxes").fontWeight(.bold)
-                Spacer()
-                Button {
-                    showingTaxesList.toggle()
-                } label: {
-                    Label("Show", systemImage: "bahtsign.bank.building.fill")
-                }.sheet(isPresented: $showingTaxesList, content: {
-                    TaxesList(isPresented: $showingTaxesList)
-                })
-
-            }.padding(.vertical)
-
-
-            HStack {
-                Spacer()
-                Button("Close") {
-                    dismiss()
-                    self.isPresented = false
+                    Label("Rates", systemImage: "dollarsign.circle")
                 }
-                Spacer()
+                Button {
+                    showingTaxesList = true
+                } label: {
+                    Label("Taxes", systemImage: "percent")
+                }
             }
-        }.padding()
-    }
-    
-    private func saveCompanyName(_ companyName: String) {
-        UserDefaults.standard.set(companyName, forKey: "companyName")
-    }
-    
-    private func saveAddress(_ address: String) {
-        UserDefaults.standard.set(address, forKey: "address")
-    }
-
-    private func saveBankDetails(_ bankDetails: String) {
-        UserDefaults.standard.set(bankDetails, forKey: "bankDetails")
-    }
-    
-
-    private func saveSequence(_ sequence: String) {
-        UserDefaults.standard.set(sequence, forKey: "sequence")
+        }
+        .formStyle(.grouped)
+        .padding()
+        .frame(minWidth: 480, minHeight: 420)
+        .fileImporter(
+            isPresented: $showingLogoPicker,
+            allowedContentTypes: [.png, .jpeg, .webP],
+            allowsMultipleSelection: false
+        ) { result in
+            if case .success(let urls) = result, let url = urls.first {
+                do {
+                    try CompanyLogoStore.save(from: url)
+                    logoRevision += 1
+                } catch {
+                    print("Could not save logo: \(error)")
+                }
+            }
+        }
+        .sheet(isPresented: $showingRateList) {
+            RateList()
+        }
+        .sheet(isPresented: $showingTaxesList) {
+            TaxesList()
+        }
     }
 }
 
 #Preview {
-    Settings(isPresented: .constant(true))
+    AppSettingsView()
         .modelContainer(ModelData.shared.modelContainer)
 }

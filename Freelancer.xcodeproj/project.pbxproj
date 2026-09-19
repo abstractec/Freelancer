@@ -26,6 +26,9 @@
 		7B7E4CD82E58337900090787 /* RateList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CD72E58337900090787 /* RateList.swift */; };
 		7B7E4CDA2E593FFE00090787 /* BillableHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CD92E593FFA00090787 /* BillableHelper.swift */; };
 		7BBDA8C22E9B4A01001E1CCF /* CompanyLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C12E9B4A01001E1CCF /* CompanyLogo.swift */; };
+		7BBDA8C32E9B5B01001E1CCF /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C42E9B5B01001E1CCF /* StatusBadge.swift */; };
+		7BBDA8C52E9B5B02001E1CCF /* SidebarSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C62E9B5B02001E1CCF /* SidebarSelection.swift */; };
+		7BBDA8C72E9B5B03001E1CCF /* ProjectWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C82E9B5B03001E1CCF /* ProjectWorkspace.swift */; };
 		7B7E4CDB2E593FFE00090787 /* BillableHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CD92E593FFA00090787 /* BillableHelper.swift */; };
 		7B7E4CDE2E59742A00090787 /* ProjectInvoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CDD2E59742A00090787 /* ProjectInvoice.swift */; };
 		7B7E4CE02E5976CF00090787 /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CDF2E5976CF00090787 /* Invoice.swift */; };
@@ -99,6 +102,9 @@
 		7B7E4CD72E58337900090787 /* RateList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateList.swift; sourceTree = "<group>"; };
 		7B7E4CD92E593FFA00090787 /* BillableHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillableHelper.swift; sourceTree = "<group>"; };
 		7BBDA8C12E9B4A01001E1CCF /* CompanyLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyLogo.swift; sourceTree = "<group>"; };
+		7BBDA8C42E9B5B01001E1CCF /* StatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBadge.swift; sourceTree = "<group>"; };
+		7BBDA8C62E9B5B02001E1CCF /* SidebarSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarSelection.swift; sourceTree = "<group>"; };
+		7BBDA8C82E9B5B03001E1CCF /* ProjectWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectWorkspace.swift; sourceTree = "<group>"; };
 		7B7E4CDD2E59742A00090787 /* ProjectInvoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectInvoice.swift; sourceTree = "<group>"; };
 		7B7E4CDF2E5976CF00090787 /* Invoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Invoice.swift; sourceTree = "<group>"; };
 		7B7E4CE32E59BBA600090787 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -165,6 +171,7 @@
 				7B7B857F2C32BD8400BDA451 /* ProjectRow.swift */,
 				7B7B85892C33EB2B00BDA451 /* EditProject.swift */,
 				7B7B858D2C354E1200BDA451 /* ProjectDetail.swift */,
+				7BBDA8C82E9B5B03001E1CCF /* ProjectWorkspace.swift */,
 			);
 			path = Project;
 			sourceTree = "<group>";
@@ -232,6 +239,8 @@
 				7B7E4CD92E593FFA00090787 /* BillableHelper.swift */,
 				7BBDA8C12E9B4A01001E1CCF /* CompanyLogo.swift */,
 				7BA536F92C5C9205003D42F0 /* Date+Extension.swift */,
+				7BBDA8C62E9B5B02001E1CCF /* SidebarSelection.swift */,
+				7BBDA8C42E9B5B01001E1CCF /* StatusBadge.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -497,6 +506,9 @@
 				7B7E4CF52E5AEDCF00090787 /* RenderedInvoicePDF.swift in Sources */,
 				7B7E4CDA2E593FFE00090787 /* BillableHelper.swift in Sources */,
 				7BBDA8C22E9B4A01001E1CCF /* CompanyLogo.swift in Sources */,
+				7BBDA8C32E9B5B01001E1CCF /* StatusBadge.swift in Sources */,
+				7BBDA8C52E9B5B02001E1CCF /* SidebarSelection.swift in Sources */,
+				7BBDA8C72E9B5B03001E1CCF /* ProjectWorkspace.swift in Sources */,
 				7B7E4CF32E5AB82600090787 /* InvoicePDF.swift in Sources */,
 				7BA536FA2C5C9205003D42F0 /* Date+Extension.swift in Sources */,
 				7BC083442C31804600D165CD /* FreelancerApp.swift in Sources */,

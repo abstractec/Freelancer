@@ -15,15 +15,27 @@ final class Client {
     var details: String
     var status: ClientStatus
     var address: String
+    /// Number of days the client has to pay after an invoice is issued.
+    var paymentTermsDays: Int = 30
     @Relationship(deleteRule: .nullify, inverse: \Project.client) var projects: [Project]
     @Relationship(deleteRule: .nullify, inverse: \Task.client) var tasks: [Task]
 
-    init(timestamp: Date, name: String, details: String, status: ClientStatus, address: String, projects: [Project], tasks: [Task]) {
+    init(
+        timestamp: Date,
+        name: String,
+        details: String,
+        status: ClientStatus,
+        address: String,
+        paymentTermsDays: Int = 30,
+        projects: [Project],
+        tasks: [Task]
+    ) {
         self.timestamp = timestamp
         self.name = name
         self.details = details
         self.status = status
         self.address = address
+        self.paymentTermsDays = paymentTermsDays
         self.projects = projects
         self.tasks = tasks
     }
@@ -38,7 +50,7 @@ final class Client {
     }
     
     static var emptyClient: Client {
-        Client(timestamp: Date(), name: "", details: "", status: .pending, address: "", projects: [], tasks: [])
+        Client(timestamp: Date(), name: "", details: "", status: .pending, address: "", paymentTermsDays: 30, projects: [], tasks: [])
     }
 
     static let sampleData = [
@@ -48,4 +60,3 @@ final class Client {
         Client(timestamp: Date(), name: "Client 4", details: "This is client 1", status: .expired, address: "1234 A Street, Ras Al Khaimah", projects: [], tasks: [])
     ]
 }
-

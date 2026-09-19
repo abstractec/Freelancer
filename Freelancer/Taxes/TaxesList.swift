@@ -10,50 +10,59 @@ import SwiftData
 
 struct TaxesList: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @Query private var taxes: [Tax]
-    
-    @Environment(\.dismiss) var dismiss
     @State private var showingEditTax = false
     
-    @Binding var isPresented: Bool?
-    
-    init (isPresented: Binding<Bool>) {
-        _isPresented = Binding.constant(false)
-        self.isPresented = isPresented.wrappedValue
-    }
-    
     var body: some View {
-        VStack(alignment: .leading) {
-            
-            Text("Taxes").font(.headline)
-          
-            ForEach(taxes) { tax in
-                HStack {
-                    Text(tax.name).fontWeight(.bold)
-                    Text("\(tax.rate) %")
-                    Spacer()
-                    Button {
-                        modelContext.delete(tax)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
+        NavigationStack {
+            List {
+                if taxes.isEmpty {
+                    ContentUnavailableView(
+                        "No Taxes",
+                        systemImage: "percent",
+                        description: Text("Add tax rates to apply on invoices.")
+                    )
+                } else {
+                    ForEach(taxes) { tax in
+                        HStack {
+                            Text(tax.name)
+                                .font(.headline)
+                            Spacer()
+                            Text("\(String(format: "%.2f", tax.rate))%")
+                                .foregroundStyle(.secondary)
+                            Button(role: .destructive) {
+                                modelContext.delete(tax)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                            .buttonStyle(.borderless)
+                        }
                     }
                 }
             }
-            
-            Button {
-                showingEditTax.toggle()
-            } label: {
-                Label("Add", systemImage: "plus")
+            .navigationTitle("Taxes")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") { dismiss() }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingEditTax = true
+                    } label: {
+                        Label("Add", systemImage: "plus")
+                    }
+                }
             }
-            .sheet(isPresented: $showingEditTax, content: {
+            .sheet(isPresented: $showingEditTax) {
                 EditTax(isPresented: $showingEditTax, tax: Tax.emptyTax)
-            })
-            
-            
-        }.padding()
-    }}
+            }
+            .frame(minWidth: 420, minHeight: 360)
+        }
+    }
+}
 
 #Preview {
-    TaxesList(isPresented: .constant(true))
+    TaxesList()
         .modelContainer(ModelData.shared.modelContainer)
 }

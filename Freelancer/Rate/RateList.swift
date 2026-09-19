@@ -10,54 +10,62 @@ import SwiftData
 
 struct RateList: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @Query private var rates: [Rate]
-    
-    @Environment(\.dismiss) var dismiss
     @State private var showingEditRate = false
     
-    @Binding var isPresented: Bool?
-    
-    init (isPresented: Binding<Bool>) {
-        _isPresented = Binding.constant(false)
-        self.isPresented = isPresented.wrappedValue
-    }
-    
     var body: some View {
-        VStack(alignment: .leading) {
-            
-            Text("Rates").font(.headline)
-          
-            ForEach(rates) { rate in
-                HStack {
-                    Text(rate.name).fontWeight(.bold)
-                    Text("\(rate.amount)")
-                    Text("\(rate.currency)")
-                    Text("per")
-                    Text(" \(rate.timeUnit) \(rate.timeInterval) (s)")
-                    Spacer()
-                    Button {
-                        modelContext.delete(rate)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
+        NavigationStack {
+            List {
+                if rates.isEmpty {
+                    ContentUnavailableView(
+                        "No Rates",
+                        systemImage: "dollarsign.circle",
+                        description: Text("Add hourly or daily rates for time-based billables.")
+                    )
+                } else {
+                    ForEach(rates) { rate in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(rate.name)
+                                    .font(.headline)
+                                Text("\(rate.amount) \(rate.currency) per \(rate.timeUnit) \(rate.timeInterval.rawValue)(s)")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Button(role: .destructive) {
+                                modelContext.delete(rate)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                            .buttonStyle(.borderless)
+                        }
                     }
                 }
             }
-            
-            Button {
-                showingEditRate.toggle()
-            } label: {
-                Label("Add", systemImage: "plus")
+            .navigationTitle("Rates")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") { dismiss() }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingEditRate = true
+                    } label: {
+                        Label("Add", systemImage: "plus")
+                    }
+                }
             }
-            .sheet(isPresented: $showingEditRate, content: {
+            .sheet(isPresented: $showingEditRate) {
                 EditRate(isPresented: $showingEditRate, rate: Rate.emptyRate)
-            })
-            
-            
-        }.padding()
+            }
+            .frame(minWidth: 420, minHeight: 360)
+        }
     }
 }
 
 #Preview {
-    RateList(isPresented: .constant(true))
+    RateList()
         .modelContainer(ModelData.shared.modelContainer)
 }

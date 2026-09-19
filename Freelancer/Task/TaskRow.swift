@@ -11,37 +11,36 @@ struct TaskRow: View {
     var task: Task
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                HStack {
-                    Text("Name").bold()
-                    Text(task.name)
-                }
-                .padding(.bottom, 8)
-                .padding(.top, 4)
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(task.name)
+                    .font(.headline)
                 
-                switch task.status {
-                case .pending:
-                    Text("⏰ Pending")
-                case .done:
-                    Text("🎉 Complete")
-                case .cancelled:
-                    Text("😢 Cancelled")
+                if !task.details.isEmpty {
+                    Text(task.details)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
-               
-                if task.hasDueDate, let date = task.dueDate {
-                    Text("Due").bold()
-                    Text(date.formatted())
+                
+                HStack(spacing: 8) {
+                    StatusBadge.task(task.status)
+                    
+                    if task.hasDueDate, let date = task.dueDate {
+                        Label(date.formatted(date: .abbreviated, time: .omitted), systemImage: "calendar")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-
-                Divider()
             }
+            
+            Spacer()
         }
+        .padding(.vertical, 4)
     }
 }
 
 #Preview {
-    return Group {
-        TaskRow(task: ModelData.shared.clientTask)
-    }
+    TaskRow(task: ModelData.shared.clientTask)
+        .padding()
 }

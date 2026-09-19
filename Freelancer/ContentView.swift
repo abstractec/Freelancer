@@ -10,90 +10,135 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Query(sort: \Client.name) private var clients: [Client]
     @Query private var tasks: [Task]
     
-    @Query private var clients: [Client]
+    @State private var selection: SidebarSelection? = .tasks
     @State private var showingEditClient = false
     @State private var isCreatingClient = false
-    @State private var showingRateList = false
-    @State private var showingEditTask = false
-    @State private var showingSettings = false
+    @State private var selectedClientForEdit: Client?
     
-    @State private var selectedClient: Client?
-
     var body: some View {
         NavigationSplitView {
-            List {
-                ForEach(clients) { client in
-                    HStack {
-                        NavigationLink {
-                            ClientDetail(client: client)
-                        } label: {
-                            Text(client.name)
+            List(selection: $selection) {
+                Section {
+                    Label("Tasks", systemImage: "checklist")
+                        .tag(SidebarSelection.tasks)
+                }
+                
+                Section("Clients") {
+                    if clients.isEmpty {
+                        ContentUnavailableView(
+                            "No Clients",
+                            systemImage: "person.2",
+                            description: Text("Add a client to get started.")
+                        )
+                        .frame(minHeight: 120)
+                    } else {
+                        ForEach(clients) { client in
+                            Label(client.name, systemImage: "person")
+                                .tag(SidebarSelection.client(client.persistentModelID))
+                                .contextMenu {
+                                    Button("Edit Client") {
+                                        editClient(client)
+                                    }
+                                    Button("Delete Client", role: .destructive) {
+                                        modelContext.delete(client)
+                                        if case .client(let id) = selection, id == client.persistentModelID {
+                                            selection = .tasks
+                                        }
+                                    }
+                                }
+                            
+                            ForEach(client.projects) { project in
+                                Label(project.name, systemImage: "folder")
+                                    .tag(SidebarSelection.project(project.persistentModelID))
+                                    .padding(.leading, 8)
+                            }
                         }
-                        Spacer()
-                        
-                        Button {
-                            editClient(client: client)
-                        } label: {
-                            Label("Edit", systemImage: "pencil")
-                        }
-                        .buttonStyle(.borderless)
-                        .help("Edit client")
+                        .onDelete(perform: deleteClients)
                     }
                 }
-                .onDelete(perform: deleteItems)
             }
-            .navigationSplitViewColumnWidth(min: 240, ideal: 240)
-            .sheet(isPresented: $showingEditClient, onDismiss: {
-                selectedClient = nil
-            }) {
-                if let selectedClient {
-                    EditClient(
-                        isPresented: $showingEditClient,
-                        client: selectedClient,
-                        isNew: isCreatingClient
-                    )
-                }
-            }
+            .navigationTitle("Freelancer")
+            .navigationSplitViewColumnWidth(min: 220, ideal: 260)
             .toolbar {
                 ToolbarItem {
                     Button {
                         isCreatingClient = true
-                        selectedClient = Client.emptyClient
+                        selectedClientForEdit = Client.emptyClient
                         showingEditClient = true
                     } label: {
-                        Label("Add Item", systemImage: "plus")
+                        Label("Add Client", systemImage: "plus")
                     }
                 }
-                ToolbarItem {
-                    Button {
-                        showingSettings.toggle()
-                    } label: {
-                        Label("Rate", systemImage: "gear")
-                    }.sheet(isPresented: $showingSettings, content: {
-                        Settings(isPresented: $showingSettings)
-                    })
+            }
+            .sheet(isPresented: $showingEditClient, onDismiss: {
+                selectedClientForEdit = nil
+            }) {
+                if let selectedClientForEdit {
+                    EditClient(
+                        isPresented: $showingEditClient,
+                        client: selectedClientForEdit,
+                        isNew: isCreatingClient
+                    )
                 }
             }
-            AllTasks(isPresented: $showingEditTask, tasks: tasks)
-                .frame(height: 200)
         } detail: {
-            Text("Select an item")
+            detailView
         }
     }
-
-    private func deleteItems(offsets: IndexSet) {
+    
+    @ViewBuilder
+    private var detailView: some View {
+        switch selection {
+        case .tasks:
+            AllTasks(tasks: tasks)
+        case .client(let id):
+            if let client = clients.first(where: { $0.persistentModelID == id }) {
+                ClientDetail(client: client, selection: $selection)
+            } else {
+                ContentUnavailableView("Client not found", systemImage: "person.slash")
+            }
+        case .project(let id):
+            if let project = findProject(id: id) {
+                ProjectWorkspace(project: project)
+            } else {
+                ContentUnavailableView("Project not found", systemImage: "folder.badge.questionmark")
+            }
+        case .none:
+            ContentUnavailableView(
+                "Select an item",
+                systemImage: "sidebar.left",
+                description: Text("Choose Tasks, a client, or a project from the sidebar.")
+            )
+        }
+    }
+    
+    private func findProject(id: PersistentIdentifier) -> Project? {
+        for client in clients {
+            if let project = client.projects.first(where: { $0.persistentModelID == id }) {
+                return project
+            }
+        }
+        return nil
+    }
+    
+    private func deleteClients(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                modelContext.delete(clients[index])
+                let client = clients[index]
+                if case .client(let id) = selection, id == client.persistentModelID {
+                    selection = .tasks
+                }
+                modelContext.delete(client)
             }
         }
     }
     
-    private func editClient(client: Client) {
+    private func editClient(_ client: Client) {
         isCreatingClient = false
-        selectedClient = client
+        selectedClientForEdit = client
         showingEditClient = true
     }
 }

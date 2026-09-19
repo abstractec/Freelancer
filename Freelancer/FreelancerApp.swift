@@ -19,6 +19,7 @@ struct FreelancerApp: App {
             Rate.self,
             Tax.self,
             UserSettings.self,
+            Invoice.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         
@@ -28,11 +29,18 @@ struct FreelancerApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
         .modelContainer(sharedModelContainer)
+        
+        #if os(macOS)
+        Settings {
+            AppSettingsView()
+                .modelContainer(sharedModelContainer)
+        }
+        #endif
     }
 }

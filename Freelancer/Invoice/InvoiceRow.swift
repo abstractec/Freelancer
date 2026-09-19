@@ -11,42 +11,53 @@ struct InvoiceRow: View {
     @Environment(\.modelContext) private var modelData
     @State private var showingEditInvoice = false
     @State private var showingPDF = false
-
-    @State var invoice: Invoice
-    @State var project: Project
     
-    init(invoice: Invoice, project: Project) {
-        self.invoice = invoice
-        self.project = project
-    }
-    
+    var invoice: Invoice
+    var project: Project
     
     var body: some View {
-        HStack {
-            Text("\(invoice.billables.count) Billable(s) \(dateRange)")
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(invoice.billables.count) billable(s)")
+                    .font(.headline)
+                Text(dateRange)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            
             Spacer()
+            
+            StatusBadge.invoice(invoice.status)
+            
             Button {
-                showingPDF.toggle()
+                showingPDF = true
             } label: {
-                Label("PDF", systemImage: "document")
-            }.padding(.trailing, 8)
-                .sheet(isPresented: $showingPDF, content: {
-                    InvoicePDF(invoice: self.invoice, project: self.project)
-                })
+                Image(systemName: "doc")
+            }
+            .buttonStyle(.borderless)
+            .help("Open PDF")
+            
             Button {
-                showingEditInvoice.toggle()
+                showingEditInvoice = true
             } label: {
-                Label("Edit", systemImage: "pencil")
-            }.padding(.trailing, 8)
-                .sheet(isPresented: $showingEditInvoice, content: {
-                    ProjectInvoice(isPresented: $showingEditInvoice, project: self.project, invoice: self.invoice)
-                })
-            Button {
+                Image(systemName: "pencil")
+            }
+            .buttonStyle(.borderless)
+            .help("Edit invoice")
+            
+            Button(role: .destructive) {
                 modelData.delete(invoice)
             } label: {
-                Label("Delete", systemImage: "trash")
-            }.padding(.trailing, 8)
-
+                Image(systemName: "trash")
+            }
+            .buttonStyle(.borderless)
+            .help("Delete invoice")
+        }
+        .sheet(isPresented: $showingPDF) {
+            InvoicePDF(invoice: invoice, project: project)
+        }
+        .sheet(isPresented: $showingEditInvoice) {
+            ProjectInvoice(isPresented: $showingEditInvoice, project: project, invoice: invoice)
         }
     }
     
@@ -64,4 +75,5 @@ struct InvoiceRow: View {
 
 #Preview {
     InvoiceRow(invoice: Invoice.emptyInvoice, project: Project.emptyProject)
+        .padding()
 }

@@ -10,43 +10,40 @@ import SwiftUI
 struct TaskSummary: View {
     var tasks: [Task]
     
-    var incompleteTaskCount: Int {
-        tasks.filter { task in
-            task.status == .pending
-        }.count
+    private var incompleteTaskCount: Int {
+        tasks.filter { $0.status == .pending }.count
     }
-
-    var completedTaskCount: Int  {
-        tasks.filter { task in
-            task.status == .done
-        }.count
+    
+    private var completedTaskCount: Int {
+        tasks.filter { $0.status == .done }.count
     }
-
-    var cancelledTaskCount: Int  {
-        tasks.filter { task in
-            task.status == .cancelled
-        }.count
+    
+    private var cancelledTaskCount: Int {
+        tasks.filter { $0.status == .cancelled }.count
     }
-
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text("Incomplete: \(incompleteTaskCount)")
-                    .bold()
-                Text("Completed: \(completedTaskCount)")
-                Text("Cancelled: \(cancelledTaskCount)")
-            }
-
+        HStack(spacing: 16) {
+            summaryChip(title: "Pending", count: incompleteTaskCount, tint: .orange)
+            summaryChip(title: "Done", count: completedTaskCount, tint: .green)
+            summaryChip(title: "Cancelled", count: cancelledTaskCount, tint: .red)
             Spacer()
         }
-        .padding(.vertical, 4)
+    }
+    
+    private func summaryChip(title: String, count: Int, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("\(count)")
+                .font(.title2.bold())
+                .foregroundStyle(tint)
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 }
 
 #Preview {
-    return Group {
-        TaskSummary(tasks: ModelData.shared.client.tasks)
-    }
+    TaskSummary(tasks: ModelData.shared.client.tasks)
+        .padding()
 }
-

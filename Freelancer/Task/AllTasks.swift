@@ -9,75 +9,53 @@ import SwiftUI
 import SwiftData
 
 struct AllTasks: View {
-    @Environment(\.modelContext) private var modelData
-    
-    @Environment(\.dismiss) var dismiss
-    @State private var showingEditTask = false
-
-    @Binding var isPresented: Bool
-    
     var tasks: [Task]
-
-    var incompleteTasks: [Task] {
-        tasks.filter{ task in
-            task.status == .pending
-        }
+    
+    private var incompleteTasks: [Task] {
+        tasks.filter { $0.status == .pending }.sorted()
     }
-
-    var completeTasks: [Task] {
-        tasks.filter{ task in
-            task.status == .done
-        }
+    
+    private var completeTasks: [Task] {
+        tasks.filter { $0.status == .done }.sorted()
     }
-
-    var cancelledTasks: [Task] {
-        tasks.filter{ task in
-            task.status == .cancelled
-        }
+    
+    private var cancelledTasks: [Task] {
+        tasks.filter { $0.status == .cancelled }.sorted()
     }
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                HStack(alignment: .center) {
-                    Spacer()
-                    Text("Tasks").font(.title)
-                    Spacer()
+        Group {
+            if tasks.isEmpty {
+                ContentUnavailableView(
+                    "No Tasks",
+                    systemImage: "checklist",
+                    description: Text("Tasks from clients and projects will appear here.")
+                )
+            } else {
+                List {
+                    taskSection(title: "Pending", tasks: incompleteTasks)
+                    taskSection(title: "Done", tasks: completeTasks)
+                    taskSection(title: "Cancelled", tasks: cancelledTasks)
                 }
-
-                ScrollView {
-                    VStack(alignment: .leading) {
-                        ForEach(tasks.sorted()) { task in
-                            HStack {
-                                Text(task.name).bold()
-                                                                
-                                if task.hasDueDate, let date = task.dueDate {
-                                    Text(date.formatted())
-                                }
-                                
-                                switch task.status {
-                                case .pending:
-                                    Text("⏰ Pending")
-                                case .done:
-                                    Text("🎉 Complete")
-                                case .cancelled:
-                                    Text("😢 Cancelled")
-                                }
-                            }
-                            Spacer()
-                        }
-                    }
-                }
-
-            }.padding(.all, 8)
+            }
         }
-        .padding(.vertical, 4)
-//        .frame(width: max(40,640), height: max(40,640))
+        .navigationTitle("Tasks")
+    }
+    
+    @ViewBuilder
+    private func taskSection(title: String, tasks: [Task]) -> some View {
+        if !tasks.isEmpty {
+            Section(title) {
+                ForEach(tasks) { task in
+                    TaskRow(task: task)
+                }
+            }
+        }
     }
 }
 
 #Preview {
-    return Group {
-        AllTasks(isPresented: .constant(false), tasks: ModelData.shared.tasks)
+    NavigationStack {
+        AllTasks(tasks: ModelData.shared.tasks)
     }
 }

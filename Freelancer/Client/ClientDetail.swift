@@ -8,133 +8,134 @@
 import SwiftUI
 
 struct ClientDetail: View {
-    @Environment(\.modelContext) private var modelData
     var client: Client
-    @State private var selectedProject: Project?
+    @Binding var selection: SidebarSelection?
+    
     @State private var showingEditClient = false
     @State private var showingEditProject = false
     @State private var showingEditClientTask = false
     @State private var showingClientTasks = false
-
+    
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading) {
-                VStack(alignment: .leading) {
-                    Text(client.name)
-                        .font(.title)
-                    
-                    HStack {
-                        Text(client.address)
-                        Spacer()
-                    }
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    
-                    Spacer()
-                    
-                    Text(client.details)
-                        .font(.subheadline).padding(.bottom, 4)
-                    
-                    HStack {
-                        
-                        switch client.status {
-                        case .pending:
-                            Text("⏰ Pending")
-                        case .won:
-                            Text("🎉 Won")
-                        case .lost:
-                            Text("😢 Lost")
-                        case .expired:
-                            Text("🪦 Expired")
-                        }
-                        Spacer()
-                        Button {
-                            showingEditClient.toggle()
-                        } label: {
-                            Image(systemName: "pencil").padding(4)
-                        }
-                        .background(.white)
-                        .cornerRadius(15)
-                        .buttonStyle(.plain)
-                        .padding(.trailing, 8)
-                        .sheet(isPresented: $showingEditClient, content: {
-                            EditClient(isPresented: $showingEditClient, client: client, isNew: false)
-                        })
-                    }.padding()
-                        .background(.green.opacity(0.1))
-                        .foregroundColor(.black)
-                        .cornerRadius(15)
-                }
+            VStack(alignment: .leading, spacing: 20) {
+                header
                 
-                VStack(alignment: .leading) {
-                    HStack {
-                        Text("Tasks").font(.title2)
-                        Spacer()
-                        Button {
-                            showingEditClientTask.toggle()
-                        } label: {
-                            Image(systemName: "plus").padding(4)
-                        }
-                        .background(.white)
-                        .cornerRadius(15)
-                        .buttonStyle(.plain)
-                        .padding(.trailing, 8)
-                        .sheet(isPresented: $showingEditClientTask, content: {
-                            EditTask(isPresented: $showingEditClientTask, client: client, task: Task.emptyTask)
-                        })
-                    }
-                    
-                    HStack {
-                        TaskSummary(tasks: client.tasks)
-                        Button {
-                            showingClientTasks.toggle()
-                        } label: {
-                            Image(systemName: "checkmark.rectangle").padding(4)
-                        }
-                        .background(.white)
-                        .cornerRadius(15)
-                        .buttonStyle(.plain)
-                        .padding(.trailing, 8)
-                        .sheet(isPresented: $showingClientTasks, content: {
-                            TaskList(isPresented: $showingClientTasks, client: client, tasks: client.tasks)
-                        })
-                    }.padding()
-                        .background(.blue.opacity(0.1))
-                        .foregroundColor(.black)
-                        .cornerRadius(15)
-                }
+                tasksSection
                 
-                HStack {
-                    Text("Projects").font(.title2)
-                    Spacer()
-                    Button {
-                        showingEditProject.toggle()
-                    } label: {
-                        Label("Add", systemImage: "plus")
-                    }
-                    .padding(.trailing, 8)
-                    .sheet(isPresented: $showingEditProject, content: {
-                        EditProject(isPresented: $showingEditProject, client: client, project: Project.emptyProject)
-                    })
-
-                }
-                
-                ForEach(client.projects) { project in
-                    ProjectRow(project: project)
-                }
-                
+                projectsSection
             }
             .padding()
         }
         .navigationTitle(client.name)
-        .background(.white)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showingEditClient = true
+                } label: {
+                    Label("Edit Client", systemImage: "pencil")
+                }
+            }
+        }
+        .sheet(isPresented: $showingEditClient) {
+            EditClient(isPresented: $showingEditClient, client: client, isNew: false)
+        }
+        .sheet(isPresented: $showingEditClientTask) {
+            EditTask(isPresented: $showingEditClientTask, client: client, task: Task.emptyTask)
+        }
+        .sheet(isPresented: $showingClientTasks) {
+            TaskList(isPresented: $showingClientTasks, client: client, tasks: client.tasks)
+        }
+        .sheet(isPresented: $showingEditProject) {
+            EditProject(isPresented: $showingEditProject, client: client, project: Project.emptyProject)
+        }
+    }
+    
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(client.name)
+                    .font(.largeTitle.bold())
+                Spacer()
+                StatusBadge.client(client.status)
+            }
+            
+            if !client.address.isEmpty {
+                Text(client.address)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            
+            if !client.details.isEmpty {
+                Text(client.details)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
+    }
+    
+    private var tasksSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Tasks")
+                    .font(.title2.bold())
+                Spacer()
+                Button {
+                    showingEditClientTask = true
+                } label: {
+                    Label("Add", systemImage: "plus")
+                }
+                Button {
+                    showingClientTasks = true
+                } label: {
+                    Label("View", systemImage: "checklist")
+                }
+            }
+            
+            TaskSummary(tasks: client.tasks)
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    private var projectsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Projects")
+                    .font(.title2.bold())
+                Spacer()
+                Button {
+                    showingEditProject = true
+                } label: {
+                    Label("Add Project", systemImage: "plus")
+                }
+            }
+            
+            if client.projects.isEmpty {
+                ContentUnavailableView(
+                    "No projects",
+                    systemImage: "folder",
+                    description: Text("Add a project to track billables and invoices.")
+                )
+                .frame(minHeight: 120)
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(client.projects) { project in
+                        ProjectRow(project: project) {
+                            selection = .project(project.persistentModelID)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
-
 #Preview {
-    Group {
-        ClientDetail(client: ModelData.shared.client)
-    }
-    .modelContainer(ModelData.shared.modelContainer)
+    ClientDetail(client: ModelData.shared.client, selection: .constant(.tasks))
+        .modelContainer(ModelData.shared.modelContainer)
 }

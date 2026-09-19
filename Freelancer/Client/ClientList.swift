@@ -22,7 +22,7 @@ struct ClientList: View {
 
                 ForEach(clients) { client in
                     NavigationLink {
-                        ClientDetail(client: client)
+                        ClientDetail(client: client, selection: .constant(nil))
                     } label: {
                         ClientRow(client: client)
                     }

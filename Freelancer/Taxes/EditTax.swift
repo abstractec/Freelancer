@@ -1,5 +1,5 @@
 //
-//  EditRate.swift
+//  EditTax.swift
 //  Freelancer
 //
 //  Created by John Haselden on 22/08/2025.
@@ -11,85 +11,74 @@ struct EditTax: View {
     @Environment(\.modelContext) private var modelData
     @Environment(\.dismiss) var dismiss
     
-    @Binding var isPresented: Bool?
+    @Binding var isPresented: Bool
     
-    @State var refresh: Bool = false
-    @State var textEditorHeight : CGFloat = 40
-    
-    func update() {
-        refresh.toggle()
-    }
-    
-    @State private var tax: Tax = Tax.emptyTax
-    
+    @State private var tax: Tax
     @State private var name: String
     @State private var rate: String
-        
-    init (isPresented: Binding<Bool>, tax: Tax) {
-        self.tax = tax
-        self.name = tax.name
-        self.rate = "\(tax.rate)"
-        
-        _isPresented = Binding.constant(false)
-        self.isPresented = isPresented.wrappedValue
+    
+    init(isPresented: Binding<Bool>, tax: Tax) {
+        _isPresented = isPresented
+        _tax = State(initialValue: tax)
+        _name = State(initialValue: tax.name)
+        _rate = State(initialValue: tax.rate == 0 ? "" : String(format: "%g", tax.rate))
     }
     
     var body: some View {
-        VStack {
-            VStack(alignment: .leading) {
-                Text("Tax").bold()
-                TextField(
-                    "Name",
-                    text: $name).textFieldStyle(.roundedBorder)
-                
+        NavigationStack {
+            Form {
+                TextField("Name", text: $name)
                 HStack {
-                    TextField(
-                        "Rate",
-                        text: $rate).textFieldStyle(.roundedBorder)
-                        .onChange(of: rate) { oldValue, newValue in
-                            let filtered = newValue.filter { $0.isNumber }
-                            if filtered != newValue {
-                                rate = filtered
-                            }
+                    TextField("Rate", text: $rate)
+                        .onChange(of: rate) { _, newValue in
+                            rate = sanitizedDecimal(newValue)
                         }
                     Text("%")
+                        .foregroundStyle(.secondary)
                 }
             }
-            .padding()
-        }
-        .safeAreaInset(edge: .bottom) {
-            VStack(alignment: .trailing, content: {
-                HStack {
-                    Button(action: {
+            .formStyle(.grouped)
+            .navigationTitle("Tax")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
                         modelData.rollback()
                         isPresented = false
                         dismiss()
-                    }, label: {
-                        Text("Cancel")
-                    })
-                    
-                    Button(action: {                       
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
                         tax.name = name
                         if let doubleValue = Double(rate) {
                             tax.rate = doubleValue
                         }
-                                                
                         modelData.insert(tax)
-                        
                         isPresented = false
-                        
                         dismiss()
-                    }, label: {
-                        Text("Save")
-                    })
-
+                    }
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
-            }).padding(.bottom, 16)
-
+            }
+            .frame(minWidth: 360, minHeight: 240)
         }
+    }
+    
+    private func sanitizedDecimal(_ value: String) -> String {
+        var result = ""
+        var seenDecimal = false
+        for character in value {
+            if character.isNumber {
+                result.append(character)
+            } else if character == ".", !seenDecimal {
+                result.append(character)
+                seenDecimal = true
+            }
+        }
+        return result
     }
 }
 
 #Preview {
-    EditRate(isPresented: .constant(true), rate: Rate.emptyRate)
+    EditTax(isPresented: .constant(true), tax: Tax.emptyTax)
 }
