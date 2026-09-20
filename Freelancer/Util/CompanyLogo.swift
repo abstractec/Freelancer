@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 #if os(macOS)
 import AppKit
@@ -16,29 +17,7 @@ typealias PlatformImage = UIImage
 #endif
 
 enum CompanyLogoStore {
-    private static let filenameKey = "companyLogoFilename"
-    
-    static var directory: URL {
-        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Freelancer", isDirectory: true)
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir
-    }
-    
-    static var storedURL: URL? {
-        guard let name = UserDefaults.standard.string(forKey: filenameKey) else {
-            return nil
-        }
-        
-        let url = directory.appendingPathComponent(name)
-        return FileManager.default.fileExists(atPath: url.path) ? url : nil
-    }
-    
-    static var hasLogo: Bool {
-        storedURL != nil
-    }
-    
-    static func save(from sourceURL: URL) throws {
+    static func save(from sourceURL: URL, into settings: UserSettings) throws {
         let accessed = sourceURL.startAccessingSecurityScopedResource()
         defer {
             if accessed {
@@ -46,33 +25,25 @@ enum CompanyLogoStore {
             }
         }
         
-        let ext = sourceURL.pathExtension.isEmpty ? "png" : sourceURL.pathExtension.lowercased()
-        let dest = directory.appendingPathComponent("company-logo.\(ext)")
-        
-        if FileManager.default.fileExists(atPath: dest.path) {
-            try FileManager.default.removeItem(at: dest)
-        }
-        
-        try FileManager.default.copyItem(at: sourceURL, to: dest)
-        UserDefaults.standard.set(dest.lastPathComponent, forKey: filenameKey)
+        let data = try Data(contentsOf: sourceURL)
+        settings.logoData = data
+        settings.logoFilename = sourceURL.lastPathComponent
     }
     
-    static func remove() {
-        if let url = storedURL {
-            try? FileManager.default.removeItem(at: url)
-        }
-        UserDefaults.standard.removeObject(forKey: filenameKey)
+    static func remove(from settings: UserSettings) {
+        settings.logoData = nil
+        settings.logoFilename = nil
     }
     
-    static func loadImage() -> PlatformImage? {
-        guard let url = storedURL else {
+    static func loadImage(from settings: UserSettings?) -> PlatformImage? {
+        guard let data = settings?.logoData, !data.isEmpty else {
             return nil
         }
         
         #if os(macOS)
-        return NSImage(contentsOf: url)
+        return NSImage(data: data)
         #else
-        return UIImage(contentsOfFile: url.path)
+        return UIImage(data: data)
         #endif
     }
 }
@@ -80,13 +51,10 @@ enum CompanyLogoStore {
 struct InvoiceLogoView: View {
     var size: CGFloat = 120
     var showsPlaceholder: Bool = false
+    var settings: UserSettings?
     
-    private let image: PlatformImage?
-    
-    init(size: CGFloat = 120, showsPlaceholder: Bool = false) {
-        self.size = size
-        self.showsPlaceholder = showsPlaceholder
-        self.image = CompanyLogoStore.loadImage()
+    private var image: PlatformImage? {
+        CompanyLogoStore.loadImage(from: settings)
     }
     
     var body: some View {
@@ -110,7 +78,10 @@ struct InvoiceLogoView: View {
                 }
             }
         }
-        .frame(width: (image != nil || showsPlaceholder) ? size : 0, height: (image != nil || showsPlaceholder) ? size : 0)
+        .frame(
+            width: (image != nil || showsPlaceholder) ? size : 0,
+            height: (image != nil || showsPlaceholder) ? size : 0
+        )
         .accessibilityLabel(image == nil ? "No invoice logo" : "Invoice logo")
     }
 }

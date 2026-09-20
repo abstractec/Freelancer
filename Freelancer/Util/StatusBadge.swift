@@ -71,16 +71,24 @@ extension StatusBadge {
         }
     }
     
-    static func invoice(_ status: InvoiceStatus) -> StatusBadge {
+    static func invoice(_ status: InvoiceStatus, pastDue: Bool = false) -> StatusBadge {
+        if pastDue {
+            return StatusBadge(title: "Past Due", systemImage: "exclamationmark.triangle.fill", tint: .red)
+        }
+        
         switch status {
         case .new:
             return StatusBadge(title: "New", systemImage: "circle", tint: .blue)
         case .cancelled:
             return StatusBadge(title: "Cancelled", systemImage: "xmark.circle", tint: .red)
         case .invoiced:
-            return StatusBadge(title: "Invoiced", systemImage: "doc.text", tint: .purple)
+            return StatusBadge(title: "Unpaid", systemImage: "doc.text", tint: .orange)
         case .paid:
             return StatusBadge(title: "Paid", systemImage: "checkmark.circle.fill", tint: .green)
         }
+    }
+    
+    static func invoice(_ invoice: Invoice) -> StatusBadge {
+        StatusBadge.invoice(invoice.status, pastDue: invoice.isPastDue)
     }
 }

@@ -10,6 +10,11 @@ import SwiftData
 
 @main
 struct FreelancerApp: App {
+    /// Set to `true` only with a paid Apple Developer Program team and iCloud/CloudKit
+    /// entitlements (personal teams cannot use iCloud). Container should match the bundle id,
+    /// e.g. `iCloud.com.abstractec.Freelancer`.
+    private static let cloudKitSyncEnabled = false
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Client.self,
@@ -21,10 +26,29 @@ struct FreelancerApp: App {
             UserSettings.self,
             Invoice.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        
+        if cloudKitSyncEnabled {
+            let cloudConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .automatic
+            )
+            
+            do {
+                return try ModelContainer(for: schema, configurations: [cloudConfiguration])
+            } catch {
+                print("CloudKit ModelContainer failed (\(error)). Falling back to local store.")
+            }
+        }
+        
+        let localConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .none
+        )
         
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(for: schema, configurations: [localConfiguration])
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
@@ -33,6 +57,9 @@ struct FreelancerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .task {
+                    _ = UserSettingsStore.shared(in: sharedModelContainer.mainContext)
+                }
         }
         .modelContainer(sharedModelContainer)
         

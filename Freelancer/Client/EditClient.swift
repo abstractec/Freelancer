@@ -20,6 +20,7 @@ struct EditClient: View {
     @State private var address: String
     @State private var details: String
     @State private var status: Client.ClientStatus
+    @State private var paymentTermsDays: Int
     
     init(isPresented: Binding<Bool>, client: Client, isNew: Bool) {
         _isPresented = isPresented
@@ -29,6 +30,7 @@ struct EditClient: View {
         _address = State(initialValue: client.address)
         _details = State(initialValue: client.details)
         _status = State(initialValue: client.status)
+        _paymentTermsDays = State(initialValue: max(client.paymentTermsDays, 0))
     }
     
     var body: some View {
@@ -43,6 +45,9 @@ struct EditClient: View {
                     ForEach(Client.ClientStatus.allCases) { option in
                         Text(String(describing: option).capitalized).tag(option)
                     }
+                }
+                Stepper(value: $paymentTermsDays, in: 0...365) {
+                    LabeledContent("Payment Terms", value: "Net \(paymentTermsDays) days")
                 }
             }
             .formStyle(.grouped)
@@ -61,6 +66,7 @@ struct EditClient: View {
                         client.address = address
                         client.details = details
                         client.status = status
+                        client.paymentTermsDays = paymentTermsDays
                         
                         if isNew {
                             modelData.insert(client)
@@ -71,7 +77,7 @@ struct EditClient: View {
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
-            .frame(minWidth: 420, minHeight: 360)
+            .frame(minWidth: 420, minHeight: 400)
         }
     }
 }

@@ -18,9 +18,27 @@ final class Billable: Identifiable {
     var rate: Rate?
     var status: BillableStatus?
     var invoice: Invoice?
-    var kind: BillableKind = BillableKind.time
+    /// Optional so older store rows with a null value do not crash on materialization.
+    var kind: BillableKind?
     var fixedAmount: Double = 0
     var currency: String = ""
+    
+    /// Safe accessor for UI and calculations; treats missing values as time-based
+    /// (or fixed when there is no rate and a fixed amount is present).
+    var resolvedKind: BillableKind {
+        get {
+            if let kind {
+                return kind
+            }
+            if rate == nil && fixedAmount != 0 {
+                return .fixed
+            }
+            return .time
+        }
+        set {
+            kind = newValue
+        }
+    }
     
     init(
         start: Date,

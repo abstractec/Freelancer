@@ -125,9 +125,9 @@ struct ProjectInvoice: View {
             invoice?.billables.removeAll()
         }
         
-        if invoice?.sequence == nil, let sequence = Int(UserDefaults.standard.string(forKey: "sequence") ?? "") {
-            invoice?.sequence = sequence
-            UserDefaults.standard.set("\(sequence + 1)", forKey: "sequence")
+        if invoice?.sequence == nil {
+            let settings = UserSettingsStore.shared(in: modelData)
+            invoice?.sequence = settings.nextInvoiceSequence()
         }
         
         for billable in selected {
@@ -138,6 +138,8 @@ struct ProjectInvoice: View {
         if let taxId = selectedTax, let tax = taxes.first(where: { $0.id == taxId }) {
             invoice?.tax = tax
         }
+        
+        invoice?.markIssued()
         
         isPresented = false
         dismiss()

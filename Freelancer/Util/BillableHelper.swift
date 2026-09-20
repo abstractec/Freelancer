@@ -9,7 +9,7 @@ import Foundation
 
 class BillableHelper {
     func amount(for billable: Billable) -> Double {
-        if billable.kind == .fixed {
+        if billable.resolvedKind == .fixed {
             return billable.fixedAmount
         }
         
@@ -26,7 +26,7 @@ class BillableHelper {
     }
     
     func currency(for billable: Billable) -> String {
-        if billable.kind == .fixed {
+        if billable.resolvedKind == .fixed {
             return billable.currency
         }
         
@@ -53,7 +53,7 @@ class BillableHelper {
     }
     
     func rateLabel(for billable: Billable) -> String {
-        if billable.kind == .fixed {
+        if billable.resolvedKind == .fixed {
             return "Fixed"
         }
         

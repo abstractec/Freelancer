@@ -6,24 +6,25 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RenderedInvoicePDF: View {
     @Environment(\.defaultMinListRowHeight) var minRowHeight
+    @Environment(\.modelContext) private var modelContext
+    @Query private var allSettings: [UserSettings]
     
     let pageWidth: CGFloat = 800
     
     @State private var invoice: Invoice
-    @State private var companyName: String
-    @State private var companyAddress: String
-    @State private var bankDetails: String
     @State private var clientAddress: String
     @State private var clientName: String
+    
+    private var settings: UserSettings {
+        allSettings.first ?? UserSettingsStore.shared(in: modelContext)
+    }
 
     init(invoice: Invoice, project: Project, companyName: String = "", companyAddress: String = "", bankDetails: String = "") {
         self.invoice = invoice
-        self.companyAddress = UserDefaults.standard.string(forKey: "address") ?? ""
-        self.bankDetails = UserDefaults.standard.string(forKey: "bankDetails") ?? ""
-        self.companyName = UserDefaults.standard.string(forKey: "companyName") ?? ""
         self.clientAddress = project.client?.address ?? ""
         self.clientName = project.client?.name ?? ""
     }
@@ -33,7 +34,7 @@ struct RenderedInvoicePDF: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .firstTextBaseline) {
-                        Text(companyName)
+                        Text(settings.companyName)
                             .font(.title)
                         Text("Invoice").font(.title)
                     }
@@ -43,12 +44,12 @@ struct RenderedInvoicePDF: View {
                 
                 Spacer()
                 
-                InvoiceLogoView(size: 120)
+                InvoiceLogoView(size: 120, settings: settings)
             }
             .padding(.bottom, 16)
             
             HStack {
-                Text("From:\n\(companyAddress)")
+                Text("From:\n\(settings.address)")
                 Spacer()
                 Text("To:\n\(clientName)\n\(clientAddress)")
             }.padding(.bottom, 16)
@@ -70,8 +71,8 @@ struct RenderedInvoicePDF: View {
                     ForEach(invoice.billables.sorted{$0.start < $1.start }) { billable in
                         GridRow {
                             Text(billable.details).gridCellAnchor(.leading)
-                            Text(formatDate(billable.start, includeTime: billable.kind != .fixed)).gridCellAnchor(.leading)
-                            Text(billable.kind == .fixed ? "—" : formatDate(billable.end)).gridCellAnchor(.leading)
+                            Text(formatDate(billable.start, includeTime: billable.resolvedKind != .fixed)).gridCellAnchor(.leading)
+                            Text(billable.resolvedKind == .fixed ? "—" : formatDate(billable.end)).gridCellAnchor(.leading)
                             Text(BillableHelper().formattedAmount(for: billable)).gridCellAnchor(.leading)
                         }
                     }
@@ -113,7 +114,7 @@ struct RenderedInvoicePDF: View {
                 .font(.headline)
             
             HStack {
-                Text("\(bankDetails)")
+                Text("\(settings.bankDetails)")
                 Spacer()
             }.padding(.bottom, 16)
         }.padding()

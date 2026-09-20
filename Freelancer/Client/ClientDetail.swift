@@ -71,6 +71,10 @@ struct ClientDetail: View {
                     .font(.body)
                     .foregroundStyle(.secondary)
             }
+            
+            Text("Payment terms: Net \(client.paymentTermsDays) days")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()

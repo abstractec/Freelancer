@@ -6,59 +6,48 @@
 //
 
 import SwiftUI
+import SwiftData
 import UniformTypeIdentifiers
 
 struct AppSettingsView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var allSettings: [UserSettings]
+    
     @State private var showingRateList = false
     @State private var showingTaxesList = false
     @State private var showingLogoPicker = false
     @State private var logoRevision = 0
     
-    @State private var companyName: String = UserDefaults.standard.string(forKey: "companyName") ?? ""
-    @State private var address: String = UserDefaults.standard.string(forKey: "address") ?? ""
-    @State private var bankDetails: String = UserDefaults.standard.string(forKey: "bankDetails") ?? ""
-    @State private var sequence: String = UserDefaults.standard.string(forKey: "sequence") ?? "0"
+    private var settings: UserSettings {
+        if let existing = allSettings.first {
+            return existing
+        }
+        return UserSettingsStore.shared(in: modelContext)
+    }
     
     var body: some View {
         Form {
             Section("Company") {
-                TextField("Company Name", text: $companyName)
-                    .onChange(of: companyName) { _, newValue in
-                        UserDefaults.standard.set(newValue, forKey: "companyName")
-                    }
-                
-                TextField("Address", text: $address, axis: .vertical)
+                TextField("Company Name", text: binding(\.companyName))
+                TextField("Address", text: binding(\.address), axis: .vertical)
                     .lineLimit(3...6)
-                    .onChange(of: address) { _, newValue in
-                        UserDefaults.standard.set(newValue, forKey: "address")
-                    }
-                
-                TextField("Bank Details", text: $bankDetails, axis: .vertical)
+                TextField("Bank Details", text: binding(\.bankDetails), axis: .vertical)
                     .lineLimit(3...6)
-                    .onChange(of: bankDetails) { _, newValue in
-                        UserDefaults.standard.set(newValue, forKey: "bankDetails")
-                    }
-                
-                TextField("Invoice Sequence", text: $sequence)
-                    .onChange(of: sequence) { _, newValue in
-                        let filtered = newValue.filter(\.isNumber)
-                        sequence = filtered
-                        UserDefaults.standard.set(filtered, forKey: "sequence")
-                    }
+                TextField("Invoice Sequence", text: sequenceBinding)
             }
             
             Section {
                 HStack(alignment: .center, spacing: 16) {
-                    InvoiceLogoView(size: 72, showsPlaceholder: true)
+                    InvoiceLogoView(size: 72, showsPlaceholder: true, settings: settings)
                         .id(logoRevision)
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Button(CompanyLogoStore.hasLogo ? "Replace Logo…" : "Upload Logo…") {
+                        Button(settings.hasLogo ? "Replace Logo…" : "Upload Logo…") {
                             showingLogoPicker = true
                         }
-                        if CompanyLogoStore.hasLogo {
+                        if settings.hasLogo {
                             Button("Remove Logo", role: .destructive) {
-                                CompanyLogoStore.remove()
+                                CompanyLogoStore.remove(from: settings)
                                 logoRevision += 1
                             }
                         }
@@ -82,10 +71,19 @@ struct AppSettingsView: View {
                     Label("Taxes", systemImage: "percent")
                 }
             }
+            
+            Section {
+                Text("Data is stored on this device. Mac ↔ iPhone sync needs a paid Apple Developer Program membership and CloudKit (see README).")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
+        #if os(macOS)
         .padding()
         .frame(minWidth: 480, minHeight: 420)
+        #endif
+        .navigationTitle("Settings")
         .fileImporter(
             isPresented: $showingLogoPicker,
             allowedContentTypes: [.png, .jpeg, .webP],
@@ -93,7 +91,7 @@ struct AppSettingsView: View {
         ) { result in
             if case .success(let urls) = result, let url = urls.first {
                 do {
-                    try CompanyLogoStore.save(from: url)
+                    try CompanyLogoStore.save(from: url, into: settings)
                     logoRevision += 1
                 } catch {
                     print("Could not save logo: \(error)")
@@ -106,6 +104,26 @@ struct AppSettingsView: View {
         .sheet(isPresented: $showingTaxesList) {
             TaxesList()
         }
+        .onAppear {
+            _ = UserSettingsStore.shared(in: modelContext)
+        }
+    }
+    
+    private func binding(_ keyPath: ReferenceWritableKeyPath<UserSettings, String>) -> Binding<String> {
+        Binding(
+            get: { settings[keyPath: keyPath] },
+            set: { settings[keyPath: keyPath] = $0 }
+        )
+    }
+    
+    private var sequenceBinding: Binding<String> {
+        Binding(
+            get: { "\(settings.invoiceSequence)" },
+            set: { newValue in
+                let filtered = newValue.filter(\.isNumber)
+                settings.invoiceSequence = Int(filtered) ?? 0
+            }
+        )
     }
 }
 

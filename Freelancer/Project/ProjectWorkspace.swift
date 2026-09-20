@@ -157,10 +157,10 @@ struct ProjectWorkspace: View {
                 Table(openBillables) {
                     TableColumn("Details", value: \.details)
                     TableColumn("Start") { billable in
-                        Text(formatDate(billable.start, includeTime: billable.kind != .fixed))
+                        Text(formatDate(billable.start, includeTime: billable.resolvedKind != .fixed))
                     }
                     TableColumn("End") { billable in
-                        if billable.kind == .fixed {
+                        if billable.resolvedKind == .fixed {
                             Text("—")
                         } else {
                             Text(formatDate(billable.end))

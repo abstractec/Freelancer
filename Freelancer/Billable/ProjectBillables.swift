@@ -32,10 +32,10 @@ struct ProjectBillables: View {
         _name = State(initialValue: billable.details)
         _startDate = State(initialValue: billable.start)
         _endDate = State(initialValue: billable.end)
-        _kind = State(initialValue: billable.kind)
+        _kind = State(initialValue: billable.resolvedKind)
         _selectedRate = State(initialValue: billable.rate?.id)
         _currency = State(initialValue: billable.currency)
-        if billable.kind == .fixed, billable.fixedAmount != 0 {
+        if billable.resolvedKind == .fixed, billable.fixedAmount != 0 {
             _fixedAmountText = State(initialValue: String(format: "%g", billable.fixedAmount))
         } else {
             _fixedAmountText = State(initialValue: "")

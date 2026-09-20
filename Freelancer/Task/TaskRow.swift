@@ -10,6 +10,8 @@ import SwiftUI
 struct TaskRow: View {
     var task: Task
     
+    @State private var showingEditTask = false
+    
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 6) {
@@ -35,8 +37,29 @@ struct TaskRow: View {
             }
             
             Spacer()
+            
+            if task.status == .pending {
+                Button {
+                    task.status = .done
+                } label: {
+                    Image(systemName: "checkmark.circle")
+                }
+                .buttonStyle(.borderless)
+                .help("Mark as done")
+            }
+            
+            Button {
+                showingEditTask = true
+            } label: {
+                Image(systemName: "pencil")
+            }
+            .buttonStyle(.borderless)
+            .help("Edit task")
         }
         .padding(.vertical, 4)
+        .sheet(isPresented: $showingEditTask) {
+            EditTask(isPresented: $showingEditTask, task: task)
+        }
     }
 }
 

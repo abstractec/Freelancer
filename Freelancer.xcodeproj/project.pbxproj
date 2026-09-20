@@ -25,10 +25,6 @@
 		7B7E4CD62E582C5700090787 /* ProjectBillables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CD52E582C5700090787 /* ProjectBillables.swift */; };
 		7B7E4CD82E58337900090787 /* RateList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CD72E58337900090787 /* RateList.swift */; };
 		7B7E4CDA2E593FFE00090787 /* BillableHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CD92E593FFA00090787 /* BillableHelper.swift */; };
-		7BBDA8C22E9B4A01001E1CCF /* CompanyLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C12E9B4A01001E1CCF /* CompanyLogo.swift */; };
-		7BBDA8C32E9B5B01001E1CCF /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C42E9B5B01001E1CCF /* StatusBadge.swift */; };
-		7BBDA8C52E9B5B02001E1CCF /* SidebarSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C62E9B5B02001E1CCF /* SidebarSelection.swift */; };
-		7BBDA8C72E9B5B03001E1CCF /* ProjectWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C82E9B5B03001E1CCF /* ProjectWorkspace.swift */; };
 		7B7E4CDB2E593FFE00090787 /* BillableHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CD92E593FFA00090787 /* BillableHelper.swift */; };
 		7B7E4CDE2E59742A00090787 /* ProjectInvoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CDD2E59742A00090787 /* ProjectInvoice.swift */; };
 		7B7E4CE02E5976CF00090787 /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7E4CDF2E5976CF00090787 /* Invoice.swift */; };
@@ -51,6 +47,11 @@
 		7BA536F72C5C8C8B003D42F0 /* ModelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC083832C32859700D165CD /* ModelData.swift */; };
 		7BA536FA2C5C9205003D42F0 /* Date+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA536F92C5C9205003D42F0 /* Date+Extension.swift */; };
 		7BA536FB2C5C9326003D42F0 /* Date+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA536F92C5C9205003D42F0 /* Date+Extension.swift */; };
+		7BBDA8C22E9B4A01001E1CCF /* CompanyLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C12E9B4A01001E1CCF /* CompanyLogo.swift */; };
+		7BBDA8C32E9B5B01001E1CCF /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C42E9B5B01001E1CCF /* StatusBadge.swift */; };
+		7BBDA8C52E9B5B02001E1CCF /* SidebarSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C62E9B5B02001E1CCF /* SidebarSelection.swift */; };
+		7BBDA8C72E9B5B03001E1CCF /* ProjectWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8C82E9B5B03001E1CCF /* ProjectWorkspace.swift */; };
+		7BBDA8C92E9B6C01001E1CCF /* AllInvoices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBDA8CA2E9B6C01001E1CCF /* AllInvoices.swift */; };
 		7BC083442C31804600D165CD /* FreelancerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC083432C31804600D165CD /* FreelancerApp.swift */; };
 		7BC083462C31804600D165CD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC083452C31804600D165CD /* ContentView.swift */; };
 		7BC083482C31804600D165CD /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC083472C31804600D165CD /* Item.swift */; };
@@ -101,10 +102,6 @@
 		7B7E4CD52E582C5700090787 /* ProjectBillables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectBillables.swift; sourceTree = "<group>"; };
 		7B7E4CD72E58337900090787 /* RateList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateList.swift; sourceTree = "<group>"; };
 		7B7E4CD92E593FFA00090787 /* BillableHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillableHelper.swift; sourceTree = "<group>"; };
-		7BBDA8C12E9B4A01001E1CCF /* CompanyLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyLogo.swift; sourceTree = "<group>"; };
-		7BBDA8C42E9B5B01001E1CCF /* StatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBadge.swift; sourceTree = "<group>"; };
-		7BBDA8C62E9B5B02001E1CCF /* SidebarSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarSelection.swift; sourceTree = "<group>"; };
-		7BBDA8C82E9B5B03001E1CCF /* ProjectWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectWorkspace.swift; sourceTree = "<group>"; };
 		7B7E4CDD2E59742A00090787 /* ProjectInvoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectInvoice.swift; sourceTree = "<group>"; };
 		7B7E4CDF2E5976CF00090787 /* Invoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Invoice.swift; sourceTree = "<group>"; };
 		7B7E4CE32E59BBA600090787 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -120,6 +117,12 @@
 		7BA536F92C5C9205003D42F0 /* Date+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extension.swift"; sourceTree = "<group>"; };
 		7BBDA8B22E93791F001E1CCF /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		7BBDA8B32E937928001E1CCF /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		7BBDA8C12E9B4A01001E1CCF /* CompanyLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyLogo.swift; sourceTree = "<group>"; };
+		7BBDA8C42E9B5B01001E1CCF /* StatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBadge.swift; sourceTree = "<group>"; };
+		7BBDA8C62E9B5B02001E1CCF /* SidebarSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarSelection.swift; sourceTree = "<group>"; };
+		7BBDA8C82E9B5B03001E1CCF /* ProjectWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectWorkspace.swift; sourceTree = "<group>"; };
+		7BBDA8CA2E9B6C01001E1CCF /* AllInvoices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllInvoices.swift; sourceTree = "<group>"; };
+		7BBDA8CB2E9B7D01001E1CCF /* Freelancer-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Freelancer-iOS.entitlements"; sourceTree = "<group>"; };
 		7BC083402C31804600D165CD /* Freelancer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Freelancer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BC083432C31804600D165CD /* FreelancerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreelancerApp.swift; sourceTree = "<group>"; };
 		7BC083452C31804600D165CD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -208,6 +211,7 @@
 		7B7E4CDC2E59741800090787 /* Invoice */ = {
 			isa = PBXGroup;
 			children = (
+				7BBDA8CA2E9B6C01001E1CCF /* AllInvoices.swift */,
 				7B7E4CDD2E59742A00090787 /* ProjectInvoice.swift */,
 				7B7E4CF02E5AADB100090787 /* InvoiceRow.swift */,
 				7B7E4CF22E5AB82600090787 /* InvoicePDF.swift */,
@@ -286,6 +290,7 @@
 				7BC083472C31804600D165CD /* Item.swift */,
 				7BC083492C31804700D165CD /* Assets.xcassets */,
 				7BC0834E2C31804700D165CD /* Freelancer.entitlements */,
+				7BBDA8CB2E9B7D01001E1CCF /* Freelancer-iOS.entitlements */,
 				7BC0834B2C31804700D165CD /* Preview Content */,
 			);
 			path = Freelancer;
@@ -497,6 +502,7 @@
 				7BC083772C31818200D165CD /* Project.swift in Sources */,
 				7B7E4CEC2E59BF0000090787 /* EditTax.swift in Sources */,
 				7B7E4CF12E5AADB100090787 /* InvoiceRow.swift in Sources */,
+				7BBDA8C92E9B6C01001E1CCF /* AllInvoices.swift in Sources */,
 				7B7B85802C32BD8400BDA451 /* ProjectRow.swift in Sources */,
 				7B7B85A22C3D3E8600BDA451 /* EditTask.swift in Sources */,
 				7B2110D72E5734F8008A5D64 /* Rate.swift in Sources */,
@@ -623,12 +629,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx;
+				SDKROOT = auto;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -680,11 +687,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				SDKROOT = macosx;
+				SDKROOT = auto;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -695,17 +703,33 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_ENTITLEMENTS = Freelancer/Freelancer.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]" = "Freelancer/Freelancer-iOS.entitlements";
+				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = "Freelancer/Freelancer-iOS.entitlements";
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = Freelancer/Freelancer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
+				"COMBINE_HIDPI_IMAGES[sdk=macosx*]" = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Freelancer/Preview Content\"";
 				DEVELOPMENT_TEAM = SM33J5TYWZ;
-				ENABLE_HARDENED_RUNTIME = YES;
+				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				"LD_RUNPATH_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
@@ -717,7 +741,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -727,17 +751,33 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_ENTITLEMENTS = Freelancer/Freelancer.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]" = "Freelancer/Freelancer-iOS.entitlements";
+				"CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]" = "Freelancer/Freelancer-iOS.entitlements";
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = Freelancer/Freelancer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
+				"COMBINE_HIDPI_IMAGES[sdk=macosx*]" = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Freelancer/Preview Content\"";
 				DEVELOPMENT_TEAM = SM33J5TYWZ;
-				ENABLE_HARDENED_RUNTIME = YES;
+				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				"LD_RUNPATH_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
@@ -749,7 +789,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

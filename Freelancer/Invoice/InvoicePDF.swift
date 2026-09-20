@@ -6,19 +6,19 @@
 //
 
 import SwiftUI
+import SwiftData
 import UniformTypeIdentifiers
 
 struct InvoicePDF: View {
     @Environment(\.defaultMinListRowHeight) var minRowHeight
+    @Environment(\.modelContext) private var modelContext
+    @Query private var allSettings: [UserSettings]
     
     let pageWidth: CGFloat = 800
     
     @State private var invoice: Invoice
     @State private var project: Project
     
-    @State private var companyName: String
-    @State private var companyAddress: String
-    @State private var bankDetails: String
     @State private var clientName: String
     @State private var clientAddress: String
     @State private var dateRange: String
@@ -29,12 +29,13 @@ struct InvoicePDF: View {
     
     @State private var invoiceBillables: [Billable] = []
     
+    private var settings: UserSettings {
+        allSettings.first ?? UserSettingsStore.shared(in: modelContext)
+    }
+    
     init(invoice: Invoice, project: Project, companyName: String = "", companyAddress: String = "", bankDetails: String = "") {
         self.invoice = invoice
         self.project = project
-        self.companyAddress = UserDefaults.standard.string(forKey: "address") ?? ""
-        self.bankDetails = UserDefaults.standard.string(forKey: "bankDetails") ?? ""
-        self.companyName = UserDefaults.standard.string(forKey: "companyName") ?? ""
         self.clientAddress = project.client?.address ?? ""
         self.clientName = project.client?.name ?? ""
         
@@ -58,7 +59,7 @@ struct InvoicePDF: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .firstTextBaseline) {
-                        Text(companyName)
+                        Text(settings.companyName)
                             .font(.title)
                         Text("Invoice").font(.title)
                     }
@@ -69,14 +70,14 @@ struct InvoicePDF: View {
                 
                 Spacer()
                 
-                InvoiceLogoView(size: 120)
+                InvoiceLogoView(size: 120, settings: settings)
             }
             .padding(.bottom, 16)
 
 
             
             HStack {
-                Text("From:\n\(companyAddress)")
+                Text("From:\n\(settings.address)")
                 Spacer()
                 Text("To:\n\(clientName)\n\(clientAddress)")
             }.padding(.bottom, 16)
@@ -89,11 +90,11 @@ struct InvoicePDF: View {
                 Table(self.invoiceBillables) {
                     TableColumn("Details", value: \.details)
                     TableColumn("Start") { billable in
-                        Text(formatDate(billable.start, includeTime: billable.kind != .fixed))
+                        Text(formatDate(billable.start, includeTime: billable.resolvedKind != .fixed))
                     }
                     
                     TableColumn("End") { billable in
-                        if billable.kind == .fixed {
+                        if billable.resolvedKind == .fixed {
                             Text("—")
                         } else {
                             Text(formatDate(billable.end))
@@ -148,7 +149,7 @@ struct InvoicePDF: View {
                 .font(.headline)
             
             HStack {
-                Text("\(bankDetails)")
+                Text("\(settings.bankDetails)")
                 Spacer()
             }.padding(.bottom, 16)
             

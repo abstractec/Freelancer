@@ -23,6 +23,7 @@ class ModelData {
             Client.self,
             Project.self,
             Task.self,
+            UserSettings.self,
         ])
 
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
@@ -30,6 +31,7 @@ class ModelData {
         do {
             modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
             insertSampleData()
+            _ = UserSettingsStore.shared(in: context)
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }

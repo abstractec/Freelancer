@@ -12,8 +12,8 @@ struct TaskList: View {
     @State private var showingEditTask = false
     @Binding var isPresented: Bool
     
-    @State private var project: Project?
-    @State private var client: Client?
+    private let project: Project?
+    private let client: Client?
     
     private var tasks: [Task] {
         if let project {
@@ -39,12 +39,14 @@ struct TaskList: View {
     
     init(isPresented: Binding<Bool>, project: Project, tasks: [Task]) {
         _isPresented = isPresented
-        _project = State(initialValue: project)
+        self.project = project
+        self.client = nil
     }
     
     init(isPresented: Binding<Bool>, client: Client, tasks: [Task]) {
         _isPresented = isPresented
-        _client = State(initialValue: client)
+        self.client = client
+        self.project = nil
     }
     
     var body: some View {
