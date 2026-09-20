@@ -47,7 +47,7 @@ struct AllTasks: View {
         if !tasks.isEmpty {
             Section(title) {
                 ForEach(tasks) { task in
-                    TaskRow(task: task)
+                    TaskRow(task: task, showsContext: true)
                 }
             }
         }

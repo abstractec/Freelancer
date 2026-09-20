@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TaskRow: View {
     var task: Task
+    var showsContext: Bool = false
     
     @State private var showingEditTask = false
     
@@ -17,6 +18,12 @@ struct TaskRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(task.name)
                     .font(.headline)
+                
+                if showsContext, let contextLabel {
+                    Text(contextLabel)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
                 
                 if !task.details.isEmpty {
                     Text(task.details)
@@ -59,6 +66,22 @@ struct TaskRow: View {
         .padding(.vertical, 4)
         .sheet(isPresented: $showingEditTask) {
             EditTask(isPresented: $showingEditTask, task: task)
+        }
+    }
+    
+    private var contextLabel: String? {
+        let clientName = task.client?.name ?? task.project?.client?.name
+        let projectName = task.project?.name
+        
+        switch (clientName, projectName) {
+        case let (client?, project?):
+            return "\(client) · \(project)"
+        case let (client?, nil):
+            return client
+        case let (nil, project?):
+            return project
+        default:
+            return nil
         }
     }
 }
