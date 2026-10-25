@@ -6,153 +6,205 @@
 //
 
 import SwiftUI
-import SwiftData
 
+/// Printable invoice. Values are passed in because ImageRenderer does not
+/// inherit the app's SwiftData container, so @Query would come back empty.
 struct RenderedInvoicePDF: View {
-    @Environment(\.defaultMinListRowHeight) var minRowHeight
-    @Environment(\.modelContext) private var modelContext
-    @Query private var allSettings: [UserSettings]
-    
     let pageWidth: CGFloat = 800
     
-    @State private var invoice: Invoice
-    @State private var clientAddress: String
-    @State private var clientName: String
+    let companyName: String
+    let companyAddress: String
+    let bankDetails: String
+    let clientName: String
+    let clientAddress: String
+    let reference: String
+    let dateRange: String
+    let lines: [InvoicePDFLine]
+    let totalExcludingTax: String
+    let tax: String
+    let totalIncludingTax: String
+    let logo: PlatformImage?
     
-    private var settings: UserSettings {
-        allSettings.first ?? UserSettingsStore.shared(in: modelContext)
-    }
-
-    init(invoice: Invoice, project: Project, companyName: String = "", companyAddress: String = "", bankDetails: String = "") {
-        self.invoice = invoice
-        self.clientAddress = project.client?.address ?? ""
-        self.clientName = project.client?.name ?? ""
+    private let pageHeight: CGFloat
+    
+    init(
+        companyName: String,
+        companyAddress: String,
+        bankDetails: String,
+        clientName: String,
+        clientAddress: String,
+        reference: String,
+        dateRange: String,
+        lines: [InvoicePDFLine],
+        totalExcludingTax: String,
+        tax: String,
+        totalIncludingTax: String,
+        logo: PlatformImage?
+    ) {
+        self.companyName = companyName
+        self.companyAddress = companyAddress
+        self.bankDetails = bankDetails
+        self.clientName = clientName
+        self.clientAddress = clientAddress
+        self.reference = reference
+        self.dateRange = dateRange
+        self.lines = lines
+        self.totalExcludingTax = totalExcludingTax
+        self.tax = tax
+        self.totalIncludingTax = totalIncludingTax
+        self.logo = logo
+        self.pageHeight = pageWidth * sqrt(2)
     }
     
     var body: some View {
-        VStack(alignment: .leading) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text(settings.companyName)
-                            .font(.title)
-                        Text("Invoice").font(.title)
-                    }
-                    
-                    Text("Ref: \(String(format: "%08d", (invoice.sequence ?? 0)))")
-                }
-                
-                Spacer()
-                
-                InvoiceLogoView(size: 120, settings: settings)
+        VStack(alignment: .leading, spacing: 16) {
+            header
+            
+            HStack(alignment: .top, spacing: 24) {
+                InvoicePartyBlock(title: "From", text: companyAddress)
+                InvoicePartyBlock(title: "To", text: toText)
             }
-            .padding(.bottom, 16)
             
-            HStack {
-                Text("From:\n\(settings.address)")
-                Spacer()
-                Text("To:\n\(clientName)\n\(clientAddress)")
-            }.padding(.bottom, 16)
-
+            items
             
-            VStack(alignment: .leading) {
-                Text("Items")
+            Spacer(minLength: 16)
+            
+            totals
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Payment Details")
                     .font(.headline)
-                
-
-                Grid {
-                    GridRow {
-                        Text("Details").gridCellAnchor(.leading)
-                        Text("Start").gridCellAnchor(.leading)
-                        Text("End").gridCellAnchor(.leading)
-                        Text("Amount").gridCellAnchor(.leading)
-                    }
-                    Divider()
-                    ForEach(invoice.billables.sorted{$0.start < $1.start }) { billable in
-                        GridRow {
-                            Text(billable.details).gridCellAnchor(.leading)
-                            Text(formatDate(billable.start, includeTime: billable.resolvedKind != .fixed)).gridCellAnchor(.leading)
-                            Text(billable.resolvedKind == .fixed ? "—" : formatDate(billable.end)).gridCellAnchor(.leading)
-                            Text(BillableHelper().formattedAmount(for: billable)).gridCellAnchor(.leading)
-                        }
-                    }
+                Text(bankDetails)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding(32)
+        .frame(width: pageWidth, height: pageHeight, alignment: .top)
+        .background(.white)
+    }
+    
+    private var toText: String {
+        if clientAddress.isEmpty {
+            return clientName
+        }
+        if clientName.isEmpty {
+            return clientAddress
+        }
+        return "\(clientName)\n\(clientAddress)"
+    }
+    
+    private var header: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(companyName)
+                        .font(.title)
+                    Text("Invoice")
+                        .font(.title)
                 }
                 
-
+                Text("Ref: \(reference)")
+                Text(dateRange)
             }
             
             Spacer()
             
+            InvoiceLogoView(size: 120, image: logo)
+        }
+    }
+    
+    private var items: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Items")
+                .font(.headline)
+            
+            Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 6) {
+                GridRow {
+                    columnTitle("Details", width: 200)
+                    columnTitle("Start", width: 110)
+                    columnTitle("End", width: 110)
+                    columnTitle("Rate", width: 80)
+                    columnTitle("Total", width: 90)
+                    columnTitle("Status", width: 70)
+                }
+                
+                Divider()
+                    .gridCellColumns(6)
+                
+                ForEach(lines) { line in
+                    GridRow(alignment: .top) {
+                        wrapping(line.details, width: 200)
+                        wrapping(line.start, width: 110)
+                        wrapping(line.end, width: 110)
+                        wrapping(line.rate, width: 80)
+                        wrapping(line.total, width: 90)
+                        wrapping(line.status, width: 70)
+                    }
+                }
+            }
+        }
+    }
+    
+    private var totals: some View {
+        VStack(alignment: .leading, spacing: 8) {
             Text("Totals")
                 .font(.headline)
             
             HStack {
                 Spacer()
-                VStack(alignment: .trailing) {
-                    VStack {
-                        HStack {
-                            Text("Total (Excluding Tax)")
-                            Text("\(invoiceCurrency(invoice)) \(String(format: "%.2f", calculateTotalWithoutTax(invoice: invoice)))")
-                        }
-                    }
-                    VStack {
-                        HStack {
-                            Text("Tax")
-                            Text("\(invoiceCurrency(invoice)) \(String(format: "%.2f", calculateTax(invoice: invoice)))")
-                        }
-                    }
-                    VStack {
-                        HStack {
-                            Text("Total (Including Tax)")
-                            Text("\(invoiceCurrency(invoice)) \(String(format: "%.2f", calculateTotal(invoice: invoice)))")
-                        }
-                    }
+                VStack(alignment: .trailing, spacing: 4) {
+                    totalRow("Total (Excluding Tax)", totalExcludingTax)
+                    totalRow("Tax", tax)
+                    totalRow("Total (Including Tax)", totalIncludingTax)
                 }
             }
-            
-            Text("Payment Details")
-                .font(.headline)
-            
-            HStack {
-                Text("\(settings.bankDetails)")
-                Spacer()
-            }.padding(.bottom, 16)
-        }.padding()
-        
-    }
-    func formatDate(_ date: Date, includeTime: Bool = true) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .medium
-        dateFormatter.timeStyle = includeTime ? .short : .none
-        return dateFormatter.string(from: date)
-    }
-    
-    private func invoiceCurrency(_ invoice: Invoice) -> String {
-        BillableHelper().currency(for: invoice.billables)
-    }
-    
-    private func calculateTotalWithoutTax(invoice: Invoice) -> Double {
-        let billableHelper = BillableHelper()
-        return invoice.billables.reduce(0) { $0 + billableHelper.amount(for: $1) }
-    }
-    
-    private func calculateTax(invoice: Invoice) -> Double {
-        let amount = calculateTotalWithoutTax(invoice: invoice)
-        var taxAmount = 0.0
-        
-        if let tax = invoice.tax {
-            let rate = tax.rate
-            taxAmount = (amount * rate) / 100
         }
-        
-        return taxAmount
     }
     
-    private func calculateTotal(invoice: Invoice) -> Double {
-        return calculateTotalWithoutTax(invoice: invoice) + calculateTax(invoice: invoice)
+    private func columnTitle(_ title: String, width: CGFloat) -> some View {
+        Text(title)
+            .font(.headline)
+            .frame(width: width, alignment: .leading)
+    }
+    
+    private func wrapping(_ text: String, width: CGFloat) -> some View {
+        Text(text)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(width: width, alignment: .leading)
+    }
+    
+    private func totalRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label)
+            Text(value)
+        }
     }
 }
 
-#Preview {
-//    RenderedInvoicePDF()
+struct InvoicePartyBlock: View {
+    let title: String
+    let text: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.headline)
+            Text(text)
+                .fixedSize(horizontal: false, vertical: true)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+struct InvoicePDFLine: Identifiable {
+    let id = UUID()
+    let details: String
+    let start: String
+    let end: String
+    let rate: String
+    let total: String
+    let status: String
 }

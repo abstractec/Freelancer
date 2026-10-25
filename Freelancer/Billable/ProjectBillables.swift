@@ -9,14 +9,15 @@ import SwiftUI
 import SwiftData
 
 struct ProjectBillables: View {
-    @Environment(\.defaultMinListRowHeight) var minRowHeight
     @Environment(\.modelContext) private var modelData
     @Environment(\.dismiss) var dismiss
-    @Query(sort: \Rate.name) private var rates: [Rate]
     
     @Binding var isPresented: Bool
     
-    @State private var project: Project
+    private let project: Project
+    private let editingBillable: Billable?
+    
+    @State private var rates: [Rate] = []
     @State private var name: String
     @State private var startDate: Date
     @State private var endDate: Date
@@ -26,16 +27,22 @@ struct ProjectBillables: View {
     @State private var selectedRate: Rate.ID?
     @State private var lineItem: String = ""
     
-    init(isPresented: Binding<Bool>, project: Project, billable: Billable) {
+    init(isPresented: Binding<Bool>, project: Project, billable: Billable?) {
         _isPresented = isPresented
-        _project = State(initialValue: project)
-        _name = State(initialValue: billable.details)
-        _startDate = State(initialValue: billable.start)
-        _endDate = State(initialValue: billable.end)
-        _kind = State(initialValue: billable.resolvedKind)
-        _selectedRate = State(initialValue: billable.rate?.id)
-        _currency = State(initialValue: billable.currency)
-        if billable.resolvedKind == .fixed, billable.fixedAmount != 0 {
+        self.project = project
+        self.editingBillable = billable
+        _name = State(initialValue: billable?.details ?? "")
+        let start = billable?.start ?? Date()
+        var end = billable?.end ?? Date()
+        if end < start {
+            end = start
+        }
+        _startDate = State(initialValue: start)
+        _endDate = State(initialValue: end)
+        _kind = State(initialValue: billable?.resolvedKind ?? .time)
+        _selectedRate = State(initialValue: billable?.rate?.id)
+        _currency = State(initialValue: billable?.currency ?? "")
+        if let billable, billable.resolvedKind == .fixed, billable.fixedAmount != 0 {
             _fixedAmountText = State(initialValue: String(format: "%g", billable.fixedAmount))
         } else {
             _fixedAmountText = State(initialValue: "")
@@ -73,8 +80,15 @@ struct ProjectBillables: View {
                 
                 if kind == .fixed {
                     Section("Fixed cost") {
-                        DatePicker("Date", selection: $startDate, displayedComponents: [.date])
-                            .onChange(of: startDate) { _, _ in
+                        DatePicker("Start", selection: $startDate, displayedComponents: [.date])
+                            .onChange(of: startDate) { _, newValue in
+                                if endDate < newValue {
+                                    endDate = newValue
+                                }
+                                calculateBillable()
+                            }
+                        DatePicker("End", selection: $endDate, in: startDate..., displayedComponents: [.date])
+                            .onChange(of: endDate) { _, _ in
                                 calculateBillable()
                             }
                         TextField("Amount", text: $fixedAmountText)
@@ -135,10 +149,16 @@ struct ProjectBillables: View {
             }
             .frame(minWidth: 480, minHeight: 480)
             .onAppear {
+                modelData.autosaveEnabled = false
+                let descriptor = FetchDescriptor<Rate>(sortBy: [SortDescriptor(\Rate.name)])
+                rates = (try? modelData.fetch(descriptor)) ?? []
                 if currency.isEmpty, let firstRate = rates.first {
                     currency = firstRate.currency
                 }
                 calculateBillable()
+            }
+            .onDisappear {
+                modelData.autosaveEnabled = true
             }
         }
     }
@@ -147,7 +167,9 @@ struct ProjectBillables: View {
         if kind == .fixed {
             let amount = Double(fixedAmountText) ?? 0
             let currencyLabel = currency.isEmpty ? "" : "\(currency) "
-            lineItem = "Fixed cost: \(currencyLabel)\(String(format: "%.2f", amount))"
+            let startText = startDate.formatted(date: .abbreviated, time: .omitted)
+            let endText = endDate.formatted(date: .abbreviated, time: .omitted)
+            lineItem = "Fixed cost: \(currencyLabel)\(String(format: "%.2f", amount)) · \(startText) – \(endText)"
             return
         }
         
@@ -169,34 +191,54 @@ struct ProjectBillables: View {
     }
     
     private func saveBillable() {
-        switch kind {
-        case .fixed:
-            let amount = Double(fixedAmountText) ?? 0
-            let billable = Billable(
-                start: startDate,
-                end: startDate,
-                details: name,
-                project: project,
-                kind: .fixed,
-                fixedAmount: amount,
-                currency: currency
-            )
-            modelData.insert(billable)
-        case .time:
+        let selectedTimeRate: Rate?
+        if kind == .time {
             guard let selectedID = selectedRate, let rate = rates.first(where: { $0.id == selectedID }) else {
                 return
             }
-            let billable = Billable(
+            selectedTimeRate = rate
+        } else {
+            selectedTimeRate = nil
+        }
+        
+        let billable: Billable
+        if let editingBillable {
+            billable = editingBillable
+        } else {
+            billable = Billable(
                 start: startDate,
                 end: endDate,
                 details: name,
-                project: project,
-                rate: rate,
-                kind: .time
+                project: project
             )
             modelData.insert(billable)
         }
         
+        billable.start = startDate
+        billable.end = endDate
+        billable.details = name
+        billable.project = project
+        billable.resolvedKind = kind
+        if billable.status == nil {
+            billable.status = .new
+        }
+        
+        switch kind {
+        case .fixed:
+            billable.fixedAmount = Double(fixedAmountText) ?? 0
+            billable.currency = currency
+            billable.rate = nil
+        case .time:
+            billable.fixedAmount = 0
+            billable.rate = selectedTimeRate
+            billable.currency = selectedTimeRate?.currency ?? currency
+        }
+        
+        if !project.billables.contains(where: { $0.persistentModelID == billable.persistentModelID }) {
+            project.billables.append(billable)
+        }
+        
+        try? modelData.save()
         isPresented = false
         dismiss()
     }
@@ -217,5 +259,5 @@ struct ProjectBillables: View {
 }
 
 #Preview {
-    ProjectBillables(isPresented: .constant(true), project: Project.emptyProject, billable: Billable.emptyBillable)
+    ProjectBillables(isPresented: .constant(true), project: Project.emptyProject, billable: nil)
 }

@@ -54,7 +54,7 @@ struct ProjectWorkspace: View {
             }
         }
         .sheet(isPresented: $showingCreateProjectBillable) {
-            ProjectBillables(isPresented: $showingCreateProjectBillable, project: project, billable: Billable.emptyBillable)
+            ProjectBillables(isPresented: $showingCreateProjectBillable, project: project, billable: nil)
         }
         .sheet(item: $selectedBillable) { billable in
             ProjectBillables(
@@ -140,6 +140,7 @@ struct ProjectWorkspace: View {
                     .font(.title2.bold())
                 Spacer()
                 Button {
+                    modelData.autosaveEnabled = false
                     showingCreateProjectBillable = true
                 } label: {
                     Label("Add", systemImage: "plus")
@@ -160,11 +161,7 @@ struct ProjectWorkspace: View {
                         Text(formatDate(billable.start, includeTime: billable.resolvedKind != .fixed))
                     }
                     TableColumn("End") { billable in
-                        if billable.resolvedKind == .fixed {
-                            Text("—")
-                        } else {
-                            Text(formatDate(billable.end))
-                        }
+                        Text(formatDate(billable.end, includeTime: billable.resolvedKind != .fixed))
                     }
                     TableColumn("Rate") { billable in
                         Text(BillableHelper().rateLabel(for: billable))

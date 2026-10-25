@@ -14,23 +14,25 @@ struct EditClient: View {
     @Binding var isPresented: Bool
     
     private let isNew: Bool
+    /// Existing client when editing. Creation does not allocate a model until Save,
+    /// so SwiftData autosave cannot refresh the window and dismiss the sheet.
+    private let client: Client?
     
-    @State private var client: Client
     @State private var name: String
     @State private var address: String
     @State private var details: String
     @State private var status: Client.ClientStatus
     @State private var paymentTermsDays: Int
     
-    init(isPresented: Binding<Bool>, client: Client, isNew: Bool) {
+    init(isPresented: Binding<Bool>, client: Client?, isNew: Bool) {
         _isPresented = isPresented
         self.isNew = isNew
-        _client = State(initialValue: client)
-        _name = State(initialValue: client.name)
-        _address = State(initialValue: client.address)
-        _details = State(initialValue: client.details)
-        _status = State(initialValue: client.status)
-        _paymentTermsDays = State(initialValue: max(client.paymentTermsDays, 0))
+        self.client = client
+        _name = State(initialValue: client?.name ?? "")
+        _address = State(initialValue: client?.address ?? "")
+        _details = State(initialValue: client?.details ?? "")
+        _status = State(initialValue: client?.status ?? .pending)
+        _paymentTermsDays = State(initialValue: max(client?.paymentTermsDays ?? 30, 0))
     }
     
     var body: some View {
@@ -55,30 +57,51 @@ struct EditClient: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        modelData.rollback()
                         isPresented = false
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        client.name = name
-                        client.address = address
-                        client.details = details
-                        client.status = status
-                        client.paymentTermsDays = paymentTermsDays
-                        
-                        if isNew {
-                            modelData.insert(client)
-                        }
-                        isPresented = false
-                        dismiss()
+                        save()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
             .frame(minWidth: 420, minHeight: 400)
+            .onAppear {
+                modelData.autosaveEnabled = false
+            }
+            .onDisappear {
+                modelData.autosaveEnabled = true
+            }
         }
+    }
+    
+    private func save() {
+        if isNew {
+            let newClient = Client(
+                timestamp: Date(),
+                name: name,
+                details: details,
+                status: status,
+                address: address,
+                paymentTermsDays: paymentTermsDays,
+                projects: [],
+                tasks: []
+            )
+            modelData.insert(newClient)
+        } else if let client {
+            client.name = name
+            client.address = address
+            client.details = details
+            client.status = status
+            client.paymentTermsDays = paymentTermsDays
+        }
+        
+        try? modelData.save()
+        isPresented = false
+        dismiss()
     }
 }
 

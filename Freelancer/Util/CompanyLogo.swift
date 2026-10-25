@@ -52,20 +52,22 @@ struct InvoiceLogoView: View {
     var size: CGFloat = 120
     var showsPlaceholder: Bool = false
     var settings: UserSettings?
+    /// Used by the PDF renderer, which does not have a model context to load the logo from.
+    var image: PlatformImage?
     
-    private var image: PlatformImage? {
-        CompanyLogoStore.loadImage(from: settings)
+    private var resolvedImage: PlatformImage? {
+        image ?? CompanyLogoStore.loadImage(from: settings)
     }
     
     var body: some View {
         Group {
-            if let image {
+            if let resolvedImage {
                 #if os(macOS)
-                Image(nsImage: image)
+                Image(nsImage: resolvedImage)
                     .resizable()
                     .scaledToFit()
                 #else
-                Image(uiImage: image)
+                Image(uiImage: resolvedImage)
                     .resizable()
                     .scaledToFit()
                 #endif
@@ -79,9 +81,9 @@ struct InvoiceLogoView: View {
             }
         }
         .frame(
-            width: (image != nil || showsPlaceholder) ? size : 0,
-            height: (image != nil || showsPlaceholder) ? size : 0
+            width: (resolvedImage != nil || showsPlaceholder) ? size : 0,
+            height: (resolvedImage != nil || showsPlaceholder) ? size : 0
         )
-        .accessibilityLabel(image == nil ? "No invoice logo" : "Invoice logo")
+        .accessibilityLabel(resolvedImage == nil ? "No invoice logo" : "Invoice logo")
     }
 }

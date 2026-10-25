@@ -88,7 +88,8 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        clientEditor = ClientEditorPresentation(client: Client.emptyClient, isNew: true)
+                        modelContext.autosaveEnabled = false
+                        clientEditor = ClientEditorPresentation(client: nil, isNew: true)
                     } label: {
                         Label("Add Client", systemImage: "plus")
                     }
@@ -182,13 +183,14 @@ struct ContentView: View {
     }
     
     private func editClient(_ client: Client) {
+        modelContext.autosaveEnabled = false
         clientEditor = ClientEditorPresentation(client: client, isNew: false)
     }
 }
 
 private struct ClientEditorPresentation: Identifiable {
     let id = UUID()
-    let client: Client
+    let client: Client?
     let isNew: Bool
 }
 

@@ -76,11 +76,11 @@ struct InvoicePDF: View {
 
 
             
-            HStack {
-                Text("From:\n\(settings.address)")
-                Spacer()
-                Text("To:\n\(clientName)\n\(clientAddress)")
-            }.padding(.bottom, 16)
+            HStack(alignment: .top, spacing: 24) {
+                InvoicePartyBlock(title: "From", text: settings.address)
+                InvoicePartyBlock(title: "To", text: toText)
+            }
+            .padding(.bottom, 16)
             
             
             VStack(alignment: .leading) {
@@ -94,11 +94,7 @@ struct InvoicePDF: View {
                     }
                     
                     TableColumn("End") { billable in
-                        if billable.resolvedKind == .fixed {
-                            Text("—")
-                        } else {
-                            Text(formatDate(billable.end))
-                        }
+                        Text(formatDate(billable.end, includeTime: billable.resolvedKind != .fixed))
                     }
                     
                     TableColumn("Rate") { billable in
@@ -148,10 +144,11 @@ struct InvoicePDF: View {
             Text("Payment Details")
                 .font(.headline)
             
-            HStack {
-                Text("\(settings.bankDetails)")
-                Spacer()
-            }.padding(.bottom, 16)
+            Text(settings.bankDetails)
+                .fixedSize(horizontal: false, vertical: true)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 16)
             
             ShareLink(item: render(invoice: invoice)) {
                 Label("Export to PDF", systemImage: "document.fill")
@@ -186,11 +183,18 @@ struct InvoicePDF: View {
             }
     }
     
+    private var toText: String {
+        if clientAddress.isEmpty {
+            return clientName
+        }
+        if clientName.isEmpty {
+            return clientAddress
+        }
+        return "\(clientName)\n\(clientAddress)"
+    }
+    
     func render(invoice: Invoice) -> URL {
-        // 1: Render Hello World with some modifiers
-        let renderer = ImageRenderer(content:
-                                        RenderedInvoicePDF(invoice: invoice, project: project)
-        )
+        let renderer = ImageRenderer(content: renderedPage(for: invoice))
         
         renderer.proposedSize = ProposedViewSize(width: pageWidth, height: pageWidth * sqrt(2))
         
@@ -221,6 +225,40 @@ struct InvoicePDF: View {
         }
         
         return url
+    }
+    
+    private func renderedPage(for invoice: Invoice) -> RenderedInvoicePDF {
+        let helper = BillableHelper()
+        let ordered = invoice.billables.sorted { $0.start < $1.start }
+        let lines = ordered.map { billable in
+            InvoicePDFLine(
+                details: billable.details,
+                start: formatDate(billable.start, includeTime: billable.resolvedKind != .fixed),
+                end: formatDate(billable.end, includeTime: billable.resolvedKind != .fixed),
+                rate: helper.rateLabel(for: billable),
+                total: helper.formattedAmount(for: billable),
+                status: billable.status?.rawValue ?? "new"
+            )
+        }
+        
+        let currency = invoiceCurrency(invoice)
+        let excluding = calculateTotalWithoutTax(invoice: invoice)
+        let taxAmount = calculateTax(invoice: invoice)
+        
+        return RenderedInvoicePDF(
+            companyName: settings.companyName,
+            companyAddress: settings.address,
+            bankDetails: settings.bankDetails,
+            clientName: clientName,
+            clientAddress: clientAddress,
+            reference: String(format: "%08d", invoice.sequence ?? 0),
+            dateRange: dateRange,
+            lines: lines,
+            totalExcludingTax: "\(currency) \(String(format: "%.2f", excluding))",
+            tax: "\(currency) \(String(format: "%.2f", taxAmount))",
+            totalIncludingTax: "\(currency) \(String(format: "%.2f", excluding + taxAmount))",
+            logo: CompanyLogoStore.loadImage(from: settings)
+        )
     }
     
     

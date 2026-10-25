@@ -9,35 +9,52 @@ import SwiftUI
 import SwiftData
 
 struct ProjectInvoice: View {
-    @Environment(\.defaultMinListRowHeight) var minRowHeight
     @Environment(\.modelContext) private var modelData
     @Environment(\.dismiss) var dismiss
     @Query private var taxes: [Tax]
     
     @Binding var isPresented: Bool
-    @State private var project: Project
+    @Bindable var project: Project
     @State private var invoice: Invoice?
-    @State private var multiSelection: Set<UUID> = []
+    @State private var multiSelection: Set<PersistentIdentifier> = []
     @State private var selectedTax: Tax.ID?
     @State private var total: String = ""
-    @State private var billables: [Billable] = []
     
     init(isPresented: Binding<Bool>, project: Project, invoice: Invoice? = nil) {
         _isPresented = isPresented
-        _project = State(initialValue: project)
+        self.project = project
         _invoice = State(initialValue: invoice)
+    }
+    
+    private var selectableBillables: [Billable] {
+        project.billables.filter { billable in
+            if (billable.status ?? .new) == .new {
+                return true
+            }
+            guard let invoice else { return false }
+            return invoice.billables.contains { $0.persistentModelID == billable.persistentModelID }
+        }
+        .sorted { $0.start < $1.start }
     }
     
     var body: some View {
         NavigationStack {
             Form {
                 Section("Billables") {
-                    List(billables, selection: $multiSelection) { billable in
-                        Text(billable.details)
-                    }
-                    .frame(minHeight: minRowHeight * CGFloat(max(billables.count, 4)))
-                    .onChange(of: multiSelection.count) { _, _ in
-                        calculateTotal()
+                    if selectableBillables.isEmpty {
+                        Text("No open billables on this project yet.")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(selectableBillables, id: \.persistentModelID) { billable in
+                            Toggle(isOn: selectionBinding(for: billable)) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(billable.details)
+                                    Text(billableSubtitle(billable))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
                     }
                     
                     Text("\(multiSelection.count) selected")
@@ -81,12 +98,7 @@ struct ProjectInvoice: View {
             }
             .frame(minWidth: 520, minHeight: 560)
             .onAppear {
-                if invoice == nil {
-                    billables = project.billables.filter { $0.status == .new }
-                } else {
-                    billables = project.billables
-                }
-                invoice?.billables.forEach { multiSelection.insert($0.id) }
+                invoice?.billables.forEach { multiSelection.insert($0.persistentModelID) }
                 if let tax = invoice?.tax {
                     selectedTax = tax.id
                 }
@@ -95,13 +107,39 @@ struct ProjectInvoice: View {
         }
     }
     
+    private func selectionBinding(for billable: Billable) -> Binding<Bool> {
+        Binding(
+            get: { multiSelection.contains(billable.persistentModelID) },
+            set: { isSelected in
+                if isSelected {
+                    multiSelection.insert(billable.persistentModelID)
+                } else {
+                    multiSelection.remove(billable.persistentModelID)
+                }
+                calculateTotal()
+            }
+        )
+    }
+    
+    private func billableSubtitle(_ billable: Billable) -> String {
+        let helper = BillableHelper()
+        let includeTime = billable.resolvedKind != .fixed
+        let start = formatBillableDate(billable.start, includeTime: includeTime)
+        let end = formatBillableDate(billable.end, includeTime: includeTime)
+        return "\(billable.resolvedKind.label) · \(start) – \(end) · \(helper.formattedAmount(for: billable))"
+    }
+    
+    private func formatBillableDate(_ date: Date, includeTime: Bool) -> String {
+        date.formatted(date: .abbreviated, time: includeTime ? .shortened : .omitted)
+    }
+    
     private func saveInvoice() {
         var selected: [Billable] = []
         var startDate = Date.distantFuture
         var endDate = Date.distantPast
         
-        for uuid in multiSelection {
-            guard let billable = project.billables.first(where: { $0.id == uuid }) else { continue }
+        for identifier in multiSelection {
+            guard let billable = project.billables.first(where: { $0.persistentModelID == identifier }) else { continue }
             startDate = min(startDate, billable.start)
             endDate = max(endDate, billable.end)
             selected.append(billable)
@@ -150,8 +188,8 @@ struct ProjectInvoice: View {
         var amount = 0.0
         var selectedBillables: [Billable] = []
         
-        for uuid in multiSelection {
-            if let billable = project.billables.first(where: { $0.id == uuid }) {
+        for identifier in multiSelection {
+            if let billable = project.billables.first(where: { $0.persistentModelID == identifier }) {
                 selectedBillables.append(billable)
                 amount += billableHelper.amount(for: billable)
             }

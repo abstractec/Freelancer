@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ClientDetail: View {
+    @Environment(\.modelContext) private var modelContext
     var client: Client
     @Binding var selection: SidebarSelection?
     
@@ -47,7 +48,7 @@ struct ClientDetail: View {
             TaskList(isPresented: $showingClientTasks, client: client, tasks: client.tasks)
         }
         .sheet(isPresented: $showingEditProject) {
-            EditProject(isPresented: $showingEditProject, client: client, project: Project.emptyProject)
+            EditProject(isPresented: $showingEditProject, client: client, project: nil)
         }
     }
     
@@ -113,6 +114,7 @@ struct ClientDetail: View {
                     .font(.title2.bold())
                 Spacer()
                 Button {
+                    modelContext.autosaveEnabled = false
                     showingEditProject = true
                 } label: {
                     Label("Add Project", systemImage: "plus")

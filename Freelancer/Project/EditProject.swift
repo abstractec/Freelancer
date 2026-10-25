@@ -13,22 +13,22 @@ struct EditProject: View {
     
     @Binding var isPresented: Bool
     
-    private var client: Client
+    private let client: Client
+    private let project: Project?
     private let isNew: Bool
     
-    @State private var project: Project
     @State private var name: String
     @State private var details: String
     @State private var status: Project.ProjectStatus
     
-    init(isPresented: Binding<Bool>, client: Client, project: Project) {
+    init(isPresented: Binding<Bool>, client: Client, project: Project?) {
         self.client = client
-        self.isNew = project.name.isEmpty && project.details.isEmpty
+        self.project = project
+        self.isNew = project == nil
         _isPresented = isPresented
-        _project = State(initialValue: project)
-        _name = State(initialValue: project.name)
-        _details = State(initialValue: project.details)
-        _status = State(initialValue: project.status)
+        _name = State(initialValue: project?.name ?? "")
+        _details = State(initialValue: project?.details ?? "")
+        _status = State(initialValue: project?.status ?? .pending)
     }
     
     var body: some View {
@@ -48,26 +48,49 @@ struct EditProject: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        modelData.rollback()
                         isPresented = false
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        project.name = name
-                        project.details = details
-                        project.status = status
-                        project.client = client
-                        modelData.insert(project)
-                        isPresented = false
-                        dismiss()
+                        save()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
             .frame(minWidth: 420, minHeight: 360)
+            .onAppear {
+                modelData.autosaveEnabled = false
+            }
+            .onDisappear {
+                modelData.autosaveEnabled = true
+            }
         }
+    }
+    
+    private func save() {
+        if let project {
+            project.name = name
+            project.details = details
+            project.status = status
+            project.client = client
+        } else {
+            let project = Project(
+                timestamp: Date(),
+                name: name,
+                status: status,
+                client: client,
+                details: details,
+                tasks: [],
+                billables: []
+            )
+            modelData.insert(project)
+        }
+        
+        try? modelData.save()
+        isPresented = false
+        dismiss()
     }
 }
 
