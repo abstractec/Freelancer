@@ -7,11 +7,15 @@
 
 import SwiftUI
 import SwiftData
+#if os(macOS)
+import AppKit
+#endif
 
 struct ProjectInvoice: View {
     @Environment(\.modelContext) private var modelData
     @Environment(\.dismiss) var dismiss
     @Query private var taxes: [Tax]
+    @Query private var allSettings: [UserSettings]
     
     @Binding var isPresented: Bool
     @Bindable var project: Project
@@ -19,6 +23,8 @@ struct ProjectInvoice: View {
     @State private var multiSelection: Set<PersistentIdentifier> = []
     @State private var selectedTax: Tax.ID?
     @State private var total: String = ""
+    @State private var sequenceText: String = ""
+    @State private var didPrefillSequence = false
     
     init(isPresented: Binding<Bool>, project: Project, invoice: Invoice? = nil) {
         _isPresented = isPresented
@@ -40,6 +46,17 @@ struct ProjectInvoice: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    TextField("Invoice number", text: $sequenceText)
+                    Button("Use next number") {
+                        sequenceText = "\(nextSequence)"
+                    }
+                } header: {
+                    Text("Invoice number")
+                } footer: {
+                    Text("Next number is \(nextSequence). Saving this invoice with a higher number moves the counter past it.")
+                }
+                
                 Section("Billables") {
                     if selectableBillables.isEmpty {
                         Text("No open billables on this project yet.")
@@ -99,10 +116,15 @@ struct ProjectInvoice: View {
             .frame(minWidth: 520, minHeight: 560)
             .onAppear {
                 invoice?.billables.forEach { multiSelection.insert($0.persistentModelID) }
+                prefillSequence()
                 if let tax = invoice?.tax {
                     selectedTax = tax.id
                 }
                 calculateTotal()
+                resignInvoiceNumberFocus()
+            }
+            .onChange(of: allSettings.first?.invoiceSequence) { _, _ in
+                prefillSequence()
             }
         }
     }
@@ -163,10 +185,7 @@ struct ProjectInvoice: View {
             invoice?.billables.removeAll()
         }
         
-        if invoice?.sequence == nil {
-            let settings = UserSettingsStore.shared(in: modelData)
-            invoice?.sequence = settings.nextInvoiceSequence()
-        }
+        applySequence()
         
         for billable in selected {
             billable.invoice = invoice
@@ -181,6 +200,47 @@ struct ProjectInvoice: View {
         
         isPresented = false
         dismiss()
+    }
+    
+    private func prefillSequence() {
+        if let sequence = invoice?.sequence {
+            guard !didPrefillSequence else { return }
+            sequenceText = "\(sequence)"
+            didPrefillSequence = true
+            return
+        }
+        
+        guard invoice == nil, !didPrefillSequence else { return }
+        guard allSettings.first != nil else { return }
+        sequenceText = "\(nextSequence)"
+        didPrefillSequence = true
+        resignInvoiceNumberFocus()
+    }
+    
+    private func resignInvoiceNumberFocus() {
+        #if os(macOS)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            NSApp.keyWindow?.makeFirstResponder(nil)
+        }
+        #endif
+    }
+    
+    private var nextSequence: Int {
+        allSettings.first?.invoiceSequence ?? 0
+    }
+    
+    /// Writes the typed number onto this invoice. A blank field assigns the next number only when this invoice has none.
+    private func applySequence() {
+        let settings = UserSettingsStore.shared(in: modelData)
+        let typed = Int(sequenceText.filter(\.isNumber))
+        if let typed {
+            invoice?.sequence = typed
+            if typed >= settings.invoiceSequence {
+                settings.invoiceSequence = typed + 1
+            }
+        } else if invoice?.sequence == nil {
+            invoice?.sequence = settings.nextInvoiceSequence()
+        }
     }
     
     private func calculateTotal() {

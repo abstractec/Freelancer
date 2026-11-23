@@ -34,24 +34,23 @@ struct InvoicePDF: View {
     }
     
     init(invoice: Invoice, project: Project, companyName: String = "", companyAddress: String = "", bankDetails: String = "") {
-        self.invoice = invoice
-        self.project = project
-        self.clientAddress = project.client?.address ?? ""
-        self.clientName = project.client?.name ?? ""
-        
         let orderedBillables = invoice.billables.sorted { $0.start < $1.start }
-        
-        self.invoiceBillables = invoice.billables.sorted { $0.start < $1.start }
-        
+        let dateRange: String
         if let first = orderedBillables.first, let last = orderedBillables.last {
             let dateFormatter = DateFormatter()
             dateFormatter.dateStyle = .medium
             dateFormatter.timeStyle = .none
-            
-            self.dateRange = "Date Range: \(dateFormatter.string(from: first.start)) to \(dateFormatter.string(from: last.end))"
+            dateRange = "Date Range: \(dateFormatter.string(from: first.start)) to \(dateFormatter.string(from: last.end))"
         } else {
-            self.dateRange = "wango"
+            dateRange = "wango"
         }
+
+        self._invoice = State(initialValue: invoice)
+        self._project = State(initialValue: project)
+        self._clientAddress = State(initialValue: project.client?.address ?? "")
+        self._clientName = State(initialValue: project.client?.name ?? "")
+        self._dateRange = State(initialValue: dateRange)
+        self._invoiceBillables = State(initialValue: orderedBillables)
     }
     
     var body: some View {

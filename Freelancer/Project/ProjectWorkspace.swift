@@ -18,10 +18,11 @@ struct ProjectWorkspace: View {
     @State private var showingEditTask = false
     @State private var showingTasks = false
     @State private var selectedBillable: Billable?
+    @State private var billableFilter: BillableListFilter = .open
     
-    private var openBillables: [Billable] {
+    private var filteredBillables: [Billable] {
         project.billables
-            .filter { $0.status == .new }
+            .filter { billableFilter.matches($0) }
             .sorted { $0.start < $1.start }
     }
     
@@ -139,6 +140,13 @@ struct ProjectWorkspace: View {
                 Text("Billables")
                     .font(.title2.bold())
                 Spacer()
+                Picker("Show", selection: $billableFilter) {
+                    ForEach(BillableListFilter.allCases) { filter in
+                        Text(filter.title).tag(filter)
+                    }
+                }
+                .pickerStyle(.menu)
+                .frame(maxWidth: 160)
                 Button {
                     modelData.autosaveEnabled = false
                     showingCreateProjectBillable = true
@@ -147,15 +155,15 @@ struct ProjectWorkspace: View {
                 }
             }
             
-            if openBillables.isEmpty {
+            if filteredBillables.isEmpty {
                 ContentUnavailableView(
-                    "No open billables",
+                    billableFilter.emptyTitle,
                     systemImage: "clock",
-                    description: Text("Add time or fixed-cost entries to invoice later.")
+                    description: Text(billableFilter.emptyDescription)
                 )
                 .frame(minHeight: 120)
             } else {
-                Table(openBillables) {
+                Table(filteredBillables) {
                     TableColumn("Details", value: \.details)
                     TableColumn("Start") { billable in
                         Text(formatDate(billable.start, includeTime: billable.resolvedKind != .fixed))
@@ -170,7 +178,16 @@ struct ProjectWorkspace: View {
                         Text(BillableHelper().formattedAmount(for: billable))
                     }
                     TableColumn("Status") { billable in
-                        StatusBadge.billable(billable.status)
+                        Menu {
+                            ForEach(BillableStatus.allCases) { status in
+                                Button(status.menuTitle) {
+                                    setBillableStatus(billable, to: status)
+                                }
+                            }
+                        } label: {
+                            StatusBadge.billable(billable.status)
+                        }
+                        .menuStyle(.borderlessButton)
                     }
                     TableColumn("Actions") { billable in
                         HStack {
@@ -195,7 +212,7 @@ struct ProjectWorkspace: View {
                         }
                     }
                 }
-                .frame(minHeight: (minRowHeight * 1.3) + (minRowHeight * CGFloat(max(openBillables.count, 5))))
+                .frame(minHeight: (minRowHeight * 1.3) + (minRowHeight * CGFloat(max(filteredBillables.count, 5))))
             }
         }
     }
@@ -229,6 +246,13 @@ struct ProjectWorkspace: View {
                     }
                 }
             }
+        }
+    }
+    
+    private func setBillableStatus(_ billable: Billable, to status: BillableStatus) {
+        billable.status = status
+        if status == .new || status == .cancelled {
+            billable.invoice = nil
         }
     }
     

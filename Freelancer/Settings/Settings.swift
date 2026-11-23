@@ -17,6 +17,7 @@ struct AppSettingsView: View {
     @State private var showingTaxesList = false
     @State private var showingLogoPicker = false
     @State private var logoRevision = 0
+    @State private var sequenceDraft = ""
     
     private var settings: UserSettings {
         if let existing = allSettings.first {
@@ -27,13 +28,27 @@ struct AppSettingsView: View {
     
     var body: some View {
         Form {
-            Section("Company") {
+            Section {
                 TextField("Company Name", text: binding(\.companyName))
                 TextField("Address", text: binding(\.address), axis: .vertical)
                     .lineLimit(3...6)
                 TextField("Bank Details", text: binding(\.bankDetails), axis: .vertical)
                     .lineLimit(3...6)
-                TextField("Invoice Sequence", text: sequenceBinding)
+                TextField("Next invoice number", text: $sequenceDraft)
+                    .onChange(of: sequenceDraft) { _, newValue in
+                        let filtered = newValue.filter(\.isNumber)
+                        if filtered != newValue {
+                            sequenceDraft = filtered
+                            return
+                        }
+                        if let value = Int(filtered) {
+                            settings.invoiceSequence = value
+                        }
+                    }
+            } header: {
+                Text("Company")
+            } footer: {
+                Text("Next invoice number is assigned to a new invoice. To put a number on an invoice you already saved, edit that invoice and use Use next number.")
             }
             
             Section {
@@ -105,7 +120,8 @@ struct AppSettingsView: View {
             TaxesList()
         }
         .onAppear {
-            _ = UserSettingsStore.shared(in: modelContext)
+            let stored = UserSettingsStore.shared(in: modelContext)
+            sequenceDraft = "\(stored.invoiceSequence)"
         }
     }
     
@@ -116,15 +132,6 @@ struct AppSettingsView: View {
         )
     }
     
-    private var sequenceBinding: Binding<String> {
-        Binding(
-            get: { "\(settings.invoiceSequence)" },
-            set: { newValue in
-                let filtered = newValue.filter(\.isNumber)
-                settings.invoiceSequence = Int(filtered) ?? 0
-            }
-        )
-    }
 }
 
 #Preview {

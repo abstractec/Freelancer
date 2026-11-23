@@ -74,6 +74,70 @@ enum BillableStatus: String, CaseIterable, Codable, Identifiable {
     case cancelled = "cancelled"
     case invoiced = "invoiced"
     case paid = "paid"
+    
+    var menuTitle: String {
+        switch self {
+        case .new: return "New"
+        case .cancelled: return "Cancelled"
+        case .invoiced: return "Invoiced"
+        case .paid: return "Paid"
+        }
+    }
+}
+
+enum BillableListFilter: String, CaseIterable, Identifiable {
+    case open
+    case invoiced
+    case paid
+    case cancelled
+    case all
+    
+    var id: Self { self }
+    
+    var title: String {
+        switch self {
+        case .open: return "Open"
+        case .invoiced: return "Invoiced"
+        case .paid: return "Paid"
+        case .cancelled: return "Cancelled"
+        case .all: return "All"
+        }
+    }
+    
+    var emptyTitle: String {
+        switch self {
+        case .open: return "No open billables"
+        case .invoiced: return "No invoiced billables"
+        case .paid: return "No paid billables"
+        case .cancelled: return "No cancelled billables"
+        case .all: return "No billables"
+        }
+    }
+    
+    var emptyDescription: String {
+        switch self {
+        case .open: return "Add time or fixed-cost entries to invoice later."
+        case .invoiced: return "Billables on an unpaid invoice show here."
+        case .paid: return "Billables on a paid invoice show here."
+        case .cancelled: return "Cancelled billables show here."
+        case .all: return "Add time or fixed-cost entries to invoice later."
+        }
+    }
+    
+    func matches(_ billable: Billable) -> Bool {
+        switch self {
+        case .open:
+            return (billable.status ?? .new) == .new
+        case .invoiced:
+            return billable.status == .invoiced
+        case .paid:
+            return billable.status == .paid
+        case .cancelled:
+            return billable.status == .cancelled
+        case .all:
+            return true
+        }
+    }
 }
 
 enum BillableKind: String, CaseIterable, Codable, Identifiable {

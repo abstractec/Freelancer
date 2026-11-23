@@ -85,7 +85,7 @@ struct InvoiceRow: View {
             .help("Edit invoice")
             
             Button(role: .destructive) {
-                modelData.delete(invoice)
+                deleteInvoice()
             } label: {
                 Image(systemName: "trash")
             }
@@ -98,6 +98,19 @@ struct InvoiceRow: View {
         .sheet(isPresented: $showingEditInvoice) {
             ProjectInvoice(isPresented: $showingEditInvoice, project: project, invoice: invoice)
         }
+    }
+    
+    private func deleteInvoice() {
+        let linked = Array(invoice.billables)
+        for billable in linked {
+            billable.invoice = nil
+            billable.status = .new
+        }
+        invoice.billables.removeAll()
+        if let index = project.invoices.firstIndex(where: { $0.persistentModelID == invoice.persistentModelID }) {
+            project.invoices.remove(at: index)
+        }
+        modelData.delete(invoice)
     }
     
     private var projectContextLabel: String {
